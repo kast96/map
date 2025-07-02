@@ -135,29 +135,29 @@ document.addEventListener('DOMContentLoaded', function () {
 			if (sectorSystems.length < 3) return;
 
 			// Вычисляем выпуклую оболочку
-			const points = sectorSystems.map(sys => ({ x: sys.x, y: sys.y }));
+			const points = sectorSystems.map(sys => ({ x: sys.x + sys.size / 2, y: sys.y + sys.size / 2 }));
 			const hull = computeConvexHull(points);
 			
 			// Создаем контейнер для сектора
 			const sectorContainer = document.createElement('div');
 			sectorContainer.className = 'sector-container';
+			sectorContainer.style.setProperty('--sector-color', getRandomSectorColor());
 			
 			// Создаем сам сектор
 			const sectorEl = document.createElement('div');
 			sectorEl.className = 'sector';
-			
+
 			// Создаем путь для clip-path
-			const padding = 50;
+			const padding = 100;
 			const expandedPath = expandPolygon(hull, padding)
 				.map((point, i) => `${i === 0 ? 'M' : 'L'}${point.x},${point.y}`)
 				.join(' ') + ' Z';
-			
+
 			sectorEl.style.setProperty('--sector-path', `path('${expandedPath}')`);
 			sectorEl.style.left = '0';
 			sectorEl.style.top = '0';
 			sectorEl.style.width = '100%';
 			sectorEl.style.height = '100%';
-			sectorEl.style.backgroundColor = getRandomSectorColor();
 			
 			// Создаем контейнер для названия
 			const nameContainer = document.createElement('div');
@@ -253,12 +253,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function getRandomSectorColor() {
 		const colors = [
-			'rgba(100, 255, 100, 0.1)',
-			'rgba(100, 100, 255, 0.1)',
-			'rgba(255, 100, 100, 0.1)',
-			'rgba(255, 255, 100, 0.1)',
-			'rgba(100, 255, 255, 0.1)',
-			'rgba(255, 100, 255, 0.1)',
+			'rgba(100, 255, 100)',
+			'rgba(100, 100, 255)',
+			'rgba(255, 100, 100)',
+			'rgba(255, 255, 100)',
+			'rgba(100, 255, 255)',
+			'rgba(255, 100, 255)',
 		];
 		return colors[Math.floor(Math.random() * colors.length)];
 	}
@@ -276,10 +276,10 @@ document.addEventListener('DOMContentLoaded', function () {
 			const el = document.createElement('div');
 			el.className = 'path';
 
-			const x1 = fromSystem.x;
-			const y1 = fromSystem.y;
-			const x2 = toSystem.x;
-			const y2 = toSystem.y;
+			const x1 = fromSystem.x + fromSystem.size / 2;
+			const y1 = fromSystem.y + fromSystem.size / 2;
+			const x2 = toSystem.x + toSystem.size / 2;
+			const y2 = toSystem.y + toSystem.size / 2;
 
 			const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 			const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
@@ -308,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			el.style.width = `${system.size}px`;
 			el.style.height = `${system.size}px`;
 			el.style.backgroundColor = system.color;
+			el.style.setProperty('--system-color', system.color);
 
 			const nameEl = document.createElement('div');
 			nameEl.className = 'system-name';

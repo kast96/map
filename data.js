@@ -8,7 +8,7 @@ const options = {
 			x: 300,
 			y: 250,
 			sector: "Сектор Альфа",
-			size: 15,
+			size: 35,
 			color: "#FFD700",
 			celestialBodies: [
 				{
@@ -93,7 +93,7 @@ const options = {
 			x: 700,
 			y: 350,
 			sector: "Сектор Альфа",
-			size: 12,
+			size: 35,
 			color: "#FF6347",
 			celestialBodies: [
 				{
@@ -120,7 +120,7 @@ const options = {
 			x: 800,
 			y: 150,
 			sector: "Сектор Альфа",
-			size: 14,
+			size: 35,
 			color: "#FFA500",
 			celestialBodies: [
 				// ... (остальные данные о телах системы)
