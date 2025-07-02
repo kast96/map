@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+		/>
+		<title>Космическая карта</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="container">
+			<div id="map" class="map"></div>
+
+			<div class="controls">
+				<button id="zoomIn" class="zoom-btn">+</button>
+				<div id="zoomSlider" class="zoom-slider">
+					<div id="zoomSliderHandle" class="zoom-slider-handle"></div>
+				</div>
+				<button id="zoomOut" class="zoom-btn">-</button>
+			</div>
+
+			<div id="systemInfo" class="system-info hidden">
+				<div class="system-info-header">
+					<h2 id="systemName"></h2>
+					<button id="closeSystemInfo" class="close-btn">×</button>
+				</div>
+				<div id="celestialBodies" class="celestial-bodies"></div>
+			</div>
+
+			<div id="bodyInfo" class="body-info hidden">
+				<div class="body-info-header">
+					<h3 id="bodyName"></h3>
+					<button id="closeBodyInfo" class="close-btn">×</button>
+				</div>
+				<div id="bodyDetails" class="body-details"></div>
+			</div>
+		</div>
+
+		<script src="data.js"></script>
+		<script src="script.js"></script>
+	</body>
+</html>
