@@ -440,6 +440,27 @@ document.addEventListener('DOMContentLoaded', function () {
 		el.style.setProperty('--background-position', `${Math.random() * 100}%`);
 		detailsContainer.appendChild(el);
 
+		if (body.moons && body.moons.length > 0) {
+			const moonContainerEl = document.createElement('div');
+			moonContainerEl.className = 'moons-detail';
+
+			body.moons.forEach((moon) => {
+				const moonEl = document.createElement('div');
+				moonEl.className = 'moon moon-detail';
+				moonEl.style.setProperty('--moon-color', moon.color);
+				moonEl.style.setProperty('--background-position', `${Math.random() * 100}%`);
+
+				moonEl.addEventListener('click', (e) => {
+					e.stopPropagation();
+					showBodyInfo(moon);
+				});
+
+				moonContainerEl.appendChild(moonEl);
+			});
+
+			detailsContainer.appendChild(moonContainerEl);
+		}
+
 		const propsEl = document.createElement('div');
 		propsEl.className = `properties`;
 

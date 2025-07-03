@@ -286,6 +286,7 @@ body {
 
 .celestial-detail {
 	--size-scale: 4;
+	cursor: auto;
 }
 
 .celestial-body::before {
@@ -389,6 +390,18 @@ body {
 	display: flex;
 	flex-direction: column;
 	gap: 40px;
+}
+
+.moons-detail {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	width: 100%;
+}
+
+.moon-detail {
+	width: 60px;
+	height: 60px;
 }
 
 .properties {
