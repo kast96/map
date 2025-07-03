@@ -272,10 +272,11 @@ body {
 }
 
 .celestial-body {
-	--size-ratio: 1;
+	--size-scale: 1;
 	position: relative;
 	width: 50px;
-	height: 50px;
+	max-width: 100%;
+	aspect-ratio: 1 / 1;
 	border-radius: 50%;
 	background-image: url('images/planet_texture.jpg');
 	background-size: cover;
@@ -292,7 +293,7 @@ body {
 }
 
 .celestial-detail {
-	--size-ratio: 4;
+	--size-scale: 4;
 }
 
 .celestial-body::before {
@@ -313,23 +314,19 @@ body {
 }
 
 .celestial-body.small {
-	width: calc(30px * var(--size-ratio));
-	height: calc(30px * var(--size-ratio));
+	width: calc(30px * var(--size-scale));
 }
 
 .celestial-body.medium {
-	width: calc(50px * var(--size-ratio));
-	height: calc(50px * var(--size-ratio));
+	width: calc(50px * var(--size-scale));
 }
 
 .celestial-body.large {
-	width: calc(70px * var(--size-ratio));
-	height: calc(70px * var(--size-ratio));
+	width: calc(70px * var(--size-scale));
 }
 
 .celestial-body.huge {
-	width: calc(90px * var(--size-ratio));
-	height: calc(90px * var(--size-ratio));
+	width: calc(90px * var(--size-scale));
 }
 
 .celestial-name {
