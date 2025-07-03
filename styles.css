@@ -97,7 +97,6 @@ body {
 
 .sector {
 	position: absolute;
-	border: 1px dashed rgba(100, 255, 100, 0.3);
 	background-color: rgba(100, 255, 100);
 	background-color: var(--sector-color);
 	clip-path: var(--sector-path);
@@ -421,36 +420,41 @@ body {
 }
 
 .zoom-btn {
-	width: 40px;
-	height: 40px;
-	border-radius: 50%;
-	background-color: rgba(0, 0, 0, 0.7);
-	border: 1px solid #444;
-	color: white;
-	font-size: 20px;
-	cursor: pointer;
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	width: 40px;
+	height: 40px;
+	background-color: #fff;
+	border: none;
+	font-size: 26px;
+	cursor: pointer;
+}
+
+.zoom-btn:hover {
+	background-color: var(--main-color);
+	color: #fff;
 }
 
 .zoom-slider {
-	width: 40px;
-	height: 150px;
-	background-color: rgba(0, 0, 0, 0.5);
-	border: 1px solid #444;
-	border-radius: 20px;
 	position: relative;
+	width: 20px;
+	height: 150px;
+	background-color: rgba(255, 255, 255, 0.8);
 }
 
 .zoom-slider-handle {
-	width: 36px;
+	width: 40px;
 	height: 20px;
-	background-color: rgba(255, 255, 255, 0.8);
-	border-radius: 10px;
+	background-color: #fff;
+	border: 1px solid #000;
 	position: absolute;
-	left: 2px;
+	left: -10px;
 	cursor: grab;
+}
+
+.zoom-btn:hover {
+	background-color: var(--main-color);
 }
 
 .zoom-slider-handle:active {
