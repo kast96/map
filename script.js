@@ -76,10 +76,10 @@ document.addEventListener('DOMContentLoaded', function () {
 	zoomSlider.addEventListener('click', handleSliderClick);
 
 	closeSystemInfo.addEventListener('click', () =>
-		systemInfo.classList.add('hidden')
+		systemInfo.classList.remove('is-open')
 	);
 	closeBodyInfo.addEventListener('click', () =>
-		bodyInfo.classList.add('hidden')
+		bodyInfo.classList.remove('is-open')
 	);
 
 	//Координаты
@@ -311,7 +311,6 @@ document.addEventListener('DOMContentLoaded', function () {
 			el.style.top = `${system.y}px`;
 			el.style.width = `${system.size}px`;
 			el.style.height = `${system.size}px`;
-			el.style.backgroundColor = system.color;
 			el.style.setProperty('--system-color', system.color);
 
 			const nameEl = document.createElement('div');
@@ -354,27 +353,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
 			const orbitLevel = document.createElement('div');
 			orbitLevel.className = 'orbit-level';
+			if (Object.keys(orbits[orbitDistance]).length > 1) {
+				orbitLevel.className += ' orbit-level-some';
+			}
 
 			orbits[orbitDistance].forEach((body) => {
+				const orbitElContainer = document.createElement('div');
+				orbitElContainer.className = 'orbit-container';
+
 				const bodyEl = document.createElement('div');
 				bodyEl.className = `celestial-body ${body.size}`;
-				bodyEl.style.backgroundColor = body.color;
-
-				const nameEl = document.createElement('div');
-				nameEl.textContent = body.name;
-				nameEl.style.position = 'absolute';
-				nameEl.style.bottom = '-20px';
-				nameEl.style.color = 'white';
-				nameEl.style.fontSize = '10px';
-				nameEl.style.textAlign = 'center';
-				nameEl.style.width = '100%';
-
-				bodyEl.appendChild(nameEl);
+				bodyEl.style.setProperty('--celestial-color', body.color);
 
 				bodyEl.addEventListener('click', (e) => {
 					e.stopPropagation();
 					showBodyInfo(body);
 				});
+
+				const bodyElContainer = document.createElement('div');
+				bodyElContainer.className = 'celestial-container';
+
+				bodyElContainer.appendChild(bodyEl);
+				orbitElContainer.appendChild(bodyElContainer);
+
+				const nameEl = document.createElement('div');
+				nameEl.textContent = body.name;
+				nameEl.className = 'celestial-name';
+
+				orbitElContainer.appendChild(nameEl);
 
 				// Если есть спутники, добавляем их
 				if (body.moons && body.moons.length > 0) {
@@ -384,32 +390,40 @@ document.addEventListener('DOMContentLoaded', function () {
 					body.moons.forEach((moon) => {
 						const moonEl = document.createElement('div');
 						moonEl.className = 'moon';
-						moonEl.style.backgroundColor = moon.color;
+						moonEl.style.setProperty('--moon-color', moon.color);
 
 						moonEl.addEventListener('click', (e) => {
 							e.stopPropagation();
 							showBodyInfo(moon);
 						});
 
-						moonsContainer.appendChild(moonEl);
+						const moonElContainer = document.createElement('div');
+						moonElContainer.className = 'moon-container';
+
+						moonElContainer.appendChild(moonEl);
+
+						const nameMoonEl = document.createElement('div');
+						nameMoonEl.textContent = moon.name;
+						nameMoonEl.className = 'moon-name';
+	
+						moonElContainer.appendChild(nameMoonEl);
+
+						moonsContainer.appendChild(moonElContainer);
 					});
 
-					const bodyContainer = document.createElement('div');
-					bodyContainer.className = 'body-with-moons';
-					bodyContainer.appendChild(bodyEl);
-					bodyContainer.appendChild(moonsContainer);
+					orbitElContainer.appendChild(moonsContainer);
 
-					orbitLevel.appendChild(bodyContainer);
-				} else {
-					orbitLevel.appendChild(bodyEl);
+					orbitElContainer.className += ' orbit-container-with-moons';
 				}
+
+				orbitLevel.appendChild(orbitElContainer);
 			});
 
 			orbitGroup.appendChild(orbitLevel);
 			bodiesContainer.appendChild(orbitGroup);
 		});
 
-		systemInfo.classList.remove('hidden');
+		systemInfo.classList.add('is-open');
 	}
 
 	function showBodyInfo(body) {
@@ -445,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			}
 		}
 
-		bodyInfo.classList.remove('hidden');
+		bodyInfo.classList.add('is-open');
 	}
 
 	function translateSize(size) {

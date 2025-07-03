@@ -1,0 +1,42 @@
+@charset "UTF-8";
+
+@supports not (font-variation-settings: normal) {
+  @font-face {
+    font-family: "Tektur";
+    src: local("Tektur"), url("Tektur-Regular.ttf");
+    font-weight: 400;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Tektur";
+    src: local("Tektur"), url("Tektur-Medium.ttf");
+    font-weight: 500;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Tektur";
+    src: local("Tektur"), url("Tektur-SemiBold.ttf");
+    font-weight: 600;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Tektur";
+    src: local("Tektur"), url("Tektur-Bold.ttf");
+    font-weight: 700;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Tektur";
+    src: local("Tektur"), url("Tektur-Black.ttf");
+    font-weight: 900;
+    font-display: swap;
+  }
+}
+
+@supports (font-variation-settings: normal) {
+  @font-face {
+    font-family: "Tektur";
+    src: local("Tektur"), url("Tektur-VariableFont_wdth.ttf");
+    font-display: swap;
+  }
+}

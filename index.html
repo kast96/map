@@ -7,6 +7,7 @@
 			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 		/>
 		<title>Космическая карта</title>
+		<link rel="stylesheet" href="fonts/Tektur/style.css" />
 		<link rel="stylesheet" href="styles.css" />
 	</head>
 	<body>
@@ -23,18 +24,20 @@
 
 			<div class="coordinates" id="coordinates">0, 0</div>
 
-			<div id="systemInfo" class="system-info hidden">
+			<div id="systemInfo" class="system-info">
 				<div class="system-info-header">
-					<h2 id="systemName"></h2>
-					<button id="closeSystemInfo" class="close-btn">×</button>
+					<span id="systemName" class="title"></span>
+					<button id="closeSystemInfo" class="close-btn"></button>
 				</div>
-				<div id="celestialBodies" class="celestial-bodies"></div>
+				<div class="celestial-bodies-container">
+					<div id="celestialBodies" class="celestial-bodies"></div>
+				</div>
 			</div>
 
-			<div id="bodyInfo" class="body-info hidden">
+			<div id="bodyInfo" class="body-info">
 				<div class="body-info-header">
-					<h3 id="bodyName"></h3>
-					<button id="closeBodyInfo" class="close-btn">×</button>
+					<span id="bodyName" class="title"></span>
+					<button id="closeBodyInfo" class="close-btn"></button>
 				</div>
 				<div id="bodyDetails" class="body-details"></div>
 			</div>
