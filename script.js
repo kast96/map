@@ -312,6 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			el.style.width = `${system.size}px`;
 			el.style.height = `${system.size}px`;
 			el.style.setProperty('--system-color', system.color);
+			el.style.setProperty('--background-position', `${Math.random() * 100}%`);
 
 			const nameEl = document.createElement('div');
 			nameEl.className = 'system-name';
@@ -364,6 +365,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				const bodyEl = document.createElement('div');
 				bodyEl.className = `celestial-body ${body.size}`;
 				bodyEl.style.setProperty('--celestial-color', body.color);
+				bodyEl.style.setProperty('--background-position', `${Math.random() * 100}%`);
 
 				bodyEl.addEventListener('click', (e) => {
 					e.stopPropagation();
@@ -391,6 +393,7 @@ document.addEventListener('DOMContentLoaded', function () {
 						const moonEl = document.createElement('div');
 						moonEl.className = 'moon';
 						moonEl.style.setProperty('--moon-color', moon.color);
+						moonEl.style.setProperty('--background-position', `${Math.random() * 100}%`);
 
 						moonEl.addEventListener('click', (e) => {
 							e.stopPropagation();
