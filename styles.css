@@ -42,6 +42,7 @@ body {
   align-items: center;
   cursor: pointer;
   box-shadow: 0 0 10px var(--system-color);
+  transform: translate(-50%, -50%);
 }
 
 .system:hover {
@@ -250,4 +251,14 @@ body {
 
 .zoom-slider-handle:active {
   cursor: grabbing;
+}
+
+.coordinates {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 0 0 3px #000;
 }

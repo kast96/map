@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	const zoomOutBtn = document.getElementById('zoomOut');
 	const zoomSlider = document.getElementById('zoomSlider');
 	const zoomSliderHandle = document.getElementById('zoomSliderHandle');
+	const coordinates = document.getElementById('coordinates');
 
 	// Состояние карты
 	let scale = 1;
@@ -81,6 +82,9 @@ document.addEventListener('DOMContentLoaded', function () {
 		bodyInfo.classList.add('hidden')
 	);
 
+	//Координаты
+	map.addEventListener('mousemove', setCoordinates);
+
 	function generateStars(count, width, height) {
 		const stars = [];
 		for (let i = 0; i < count; i++) {
@@ -117,25 +121,25 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	function renderSectors() {
-    // Группируем системы по секторам
-    const systemsBySector = {};
-    options.systems.forEach(system => {
-        const sectorName = system.sector || 'Без сектора';
-        if (!systemsBySector[sectorName]) {
-            systemsBySector[sectorName] = [];
-        }
-        systemsBySector[sectorName].push(system);
-    });
+		// Группируем системы по секторам
+		const systemsBySector = {};
+		options.systems.forEach(system => {
+				const sectorName = system.sector || 'Без сектора';
+				if (!systemsBySector[sectorName]) {
+						systemsBySector[sectorName] = [];
+				}
+				systemsBySector[sectorName].push(system);
+		});
 
 		const container = document.createElement('div');
 		container.className = 'sectors';
 
-    // Для каждого сектора
-    Object.entries(systemsBySector).forEach(([sectorName, sectorSystems]) => {
+		// Для каждого сектора
+		Object.entries(systemsBySector).forEach(([sectorName, sectorSystems]) => {
 			if (sectorSystems.length < 3) return;
 
 			// Вычисляем выпуклую оболочку
-			const points = sectorSystems.map(sys => ({ x: sys.x + sys.size / 2, y: sys.y + sys.size / 2 }));
+			const points = sectorSystems.map(sys => ({ x: sys.x, y: sys.y }));
 			const hull = computeConvexHull(points);
 			
 			// Создаем контейнер для сектора
@@ -276,10 +280,10 @@ document.addEventListener('DOMContentLoaded', function () {
 			const el = document.createElement('div');
 			el.className = 'path';
 
-			const x1 = fromSystem.x + fromSystem.size / 2;
-			const y1 = fromSystem.y + fromSystem.size / 2;
-			const x2 = toSystem.x + toSystem.size / 2;
-			const y2 = toSystem.y + toSystem.size / 2;
+			const x1 = fromSystem.x;
+			const y1 = fromSystem.y;
+			const x2 = toSystem.x;
+			const y2 = toSystem.y;
 
 			const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 			const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
@@ -648,5 +652,12 @@ document.addEventListener('DOMContentLoaded', function () {
 				minScale + (position / sliderHeight) * (maxScale - minScale);
 			zoomToPoint(newScale, window.innerWidth / 2, window.innerHeight / 2);
 		}
+	}
+
+	function setCoordinates(e) {
+		const rect = map.getBoundingClientRect();
+		const x = (e.clientX - rect.left) / scale;
+		const y = (e.clientY - rect.top) / scale;
+		coordinates.textContent = `${Math.round(x)},${Math.round(y)}`;
 	}
 });
