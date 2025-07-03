@@ -434,35 +434,48 @@ document.addEventListener('DOMContentLoaded', function () {
 		const detailsContainer = document.getElementById('bodyDetails');
 		detailsContainer.innerHTML = '';
 
-		const typeEl = document.createElement('p');
-		typeEl.textContent = `Тип: ${body.type}`;
-		detailsContainer.appendChild(typeEl);
+		const el = document.createElement('div');
+		el.className = `celestial-detail celestial-body ${body.size}`;
+		el.style.setProperty('--celestial-color', body.color);
+		el.style.setProperty('--background-position', `${Math.random() * 100}%`);
+		detailsContainer.appendChild(el);
 
-		const sizeEl = document.createElement('p');
-		sizeEl.textContent = `Размер: ${translateSize(body.size)}`;
-		detailsContainer.appendChild(sizeEl);
+		const propsEl = document.createElement('div');
+		propsEl.className = `properties`;
 
-		const orbitEl = document.createElement('p');
-		orbitEl.textContent = `Орбита: ${body.orbit} а.е.`;
-		detailsContainer.appendChild(orbitEl);
+		propsEl.appendChild(createPropery('Тип', body.type));
+		propsEl.appendChild(createPropery('Размер', translateSize(body.size)));
+		propsEl.appendChild(createPropery('Орбита', `${body.orbit} а.е.`));
 
 		if (body.type === 'Планета' || body.type === 'Спутник') {
-			const gravityEl = document.createElement('p');
-			gravityEl.textContent = `Гравитация: ${body.gravity} g`;
-			detailsContainer.appendChild(gravityEl);
-
-			const tempEl = document.createElement('p');
-			tempEl.textContent = `Температура: ${body.temperature}°C`;
-			detailsContainer.appendChild(tempEl);
+			propsEl.appendChild(createPropery('Гравитация', `${body.gravity} g`));
+			propsEl.appendChild(createPropery('Температура', `${body.temperature}°C`));
 
 			if (body.moons && body.moons.length > 0) {
-				const moonsEl = document.createElement('p');
-				moonsEl.textContent = `Спутники: ${body.moons.length}`;
-				detailsContainer.appendChild(moonsEl);
+				propsEl.appendChild(createPropery('Спутники', body.moons.length));
 			}
 		}
 
+		detailsContainer.appendChild(propsEl);
+
 		bodyInfo.classList.add('is-open');
+	}
+
+	function createPropery(name, value) {
+		const propertyEl = document.createElement('div');
+		propertyEl.className = `property`;
+
+		const propertyNameEl = document.createElement('span');
+		propertyNameEl.className = `property-name`;
+		propertyNameEl.textContent = `${name}:`;
+		propertyEl.appendChild(propertyNameEl);
+
+		const propertyValueEl = document.createElement('span');
+		propertyValueEl.className = `property-value`;
+		propertyValueEl.textContent = value;
+		propertyEl.appendChild(propertyValueEl);
+
+		return propertyEl;
 	}
 
 	function translateSize(size) {

@@ -271,6 +271,7 @@ body {
 }
 
 .celestial-body {
+	--size-ratio: 1;
 	position: relative;
 	width: 50px;
 	height: 50px;
@@ -289,6 +290,10 @@ body {
 	transition: transform 0.2s;
 }
 
+.celestial-detail {
+	--size-ratio: 4;
+}
+
 .celestial-body::before {
 	content: '';
 	display: block;
@@ -302,28 +307,28 @@ body {
 	opacity: 0.8;
 }
 
-.celestial-body:hover {
+.celestial-body:not(.celestial-detail):hover {
 	box-shadow: 0 0 10px 3px var(--celestial-color);
 }
 
 .celestial-body.small {
-	width: 30px;
-	height: 30px;
+	width: calc(30px * var(--size-ratio));
+	height: calc(30px * var(--size-ratio));
 }
 
 .celestial-body.medium {
-	width: 50px;
-	height: 50px;
+	width: calc(50px * var(--size-ratio));
+	height: calc(50px * var(--size-ratio));
 }
 
 .celestial-body.large {
-	width: 70px;
-	height: 70px;
+	width: calc(70px * var(--size-ratio));
+	height: calc(70px * var(--size-ratio));
 }
 
 .celestial-body.huge {
-	width: 90px;
-	height: 90px;
+	width: calc(90px * var(--size-ratio));
+	height: calc(90px * var(--size-ratio));
 }
 
 .celestial-name {
@@ -390,8 +395,27 @@ body {
 	z-index: 2;
 }
 
-.body-details p {
-	margin: 5px 0;
+.body-details {
+	display: flex;
+	flex-direction: column;
+	gap: 40px;
+}
+
+.properties {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.property {
+	display: flex;
+	justify-content: flex-start;
+	align-items: flex-start;
+	gap: 5px;
+}
+
+.property-name {
+	font-weight: 600;
 }
 
 .controls {
