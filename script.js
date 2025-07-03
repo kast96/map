@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	// Состояние карты
 	let scale = 1;
-	let minScale = 1;
+	let minScale = 0.1;
 	let maxScale = 5;
 	let offsetX = 0;
 	let offsetY = 0;
@@ -527,6 +527,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function zoomToPoint(newScale, mouseX, mouseY) {
 		newScale = Math.min(Math.max(minScale, newScale), maxScale);
+
+		if (map.offsetWidth * newScale < window.innerWidth) {
+			newScale = window.innerWidth / map.offsetWidth * 1.005;
+		} else if (map.offsetHeight * newScale < window.innerHeight) {
+			newScale = window.innerHeight / map.offsetHeight * 1.005;
+		}
 		
 		// Вычисляем новые offsetX и offsetY
 		const newOffsetX = offsetX - (mouseX * (newScale / scale - 1));
