@@ -138,10 +138,11 @@ body {
 	position: absolute;
 	top: 0;
 	bottom: 0;
-	right: -1200px;
+	right: -100%;
 	background-color: #fff;
 	padding: 40px;
 	width: 1200px;
+	max-width: 100%;
 	box-sizing: border-box;
 	overflow-y: auto;
 	z-index: 100;
