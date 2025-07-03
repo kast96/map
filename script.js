@@ -1,16 +1,3 @@
-// Рассчитываем минимальный масштаб при загрузке
-function calculateMinScale() {
-	const viewportWidth = window.innerWidth;
-	const viewportHeight = window.innerHeight;
-	const minFillScaleX = viewportWidth / map.offsetWidth;
-	const minFillScaleY = viewportHeight / map.offsetHeight;
-	minScale = Math.max(minFillScaleX, minFillScaleY);
-}
-
-// Вызываем при загрузке и при изменении размера окна
-calculateMinScale();
-window.addEventListener('resize', calculateMinScale);
-
 document.addEventListener('DOMContentLoaded', function () {
 	window.scrollTo(0, 0);
 
@@ -81,6 +68,19 @@ document.addEventListener('DOMContentLoaded', function () {
 	closeBodyInfo.addEventListener('click', () =>
 		bodyInfo.classList.remove('is-open')
 	);
+
+	// Рассчитываем минимальный масштаб при загрузке
+	function calculateMinScale() {
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+		const minFillScaleX = viewportWidth / map.offsetWidth * 1.005;
+		const minFillScaleY = viewportHeight / map.offsetHeight * 1.005;
+		minScale = Math.max(minFillScaleX, minFillScaleY);
+	}
+
+	// Вызываем при загрузке и при изменении размера окна
+	calculateMinScale();
+	window.addEventListener('resize', calculateMinScale);
 
 	//Координаты
 	map.addEventListener('mousemove', setCoordinates);
@@ -548,12 +548,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function zoomToPoint(newScale, mouseX, mouseY) {
 		newScale = Math.min(Math.max(minScale, newScale), maxScale);
-
-		if (map.offsetWidth * newScale < window.innerWidth) {
-			newScale = window.innerWidth / map.offsetWidth * 1.005;
-		} else if (map.offsetHeight * newScale < window.innerHeight) {
-			newScale = window.innerHeight / map.offsetHeight * 1.005;
-		}
 		
 		// Вычисляем новые offsetX и offsetY
 		const newOffsetX = offsetX - (mouseX * (newScale / scale - 1));
