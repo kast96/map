@@ -309,9 +309,9 @@ document.addEventListener('DOMContentLoaded', function () {
 			el.dataset.id = system.id;
 			el.style.left = `${system.x}px`;
 			el.style.top = `${system.y}px`;
-			el.style.width = `${system.size}px`;
-			el.style.height = `${system.size}px`;
-			el.style.setProperty('--system-color', system.color);
+			if (system.color) {
+				el.style.setProperty('--system-color', system.color);
+			}
 			el.style.setProperty('--background-position', `${Math.random() * 100}%`);
 
 			const nameEl = document.createElement('div');
@@ -363,9 +363,14 @@ document.addEventListener('DOMContentLoaded', function () {
 				orbitElContainer.className = 'orbit-container';
 
 				const bodyEl = document.createElement('div');
-				bodyEl.className = `celestial-body ${body.size}`;
-				bodyEl.style.setProperty('--celestial-color', body.color);
+				bodyEl.className = `celestial-body celestial-body-${body.type} ${body.size}`;
+				if (body.color) {
+					bodyEl.style.setProperty('--celestial-color', body.color);
+				}
 				bodyEl.style.setProperty('--background-position', `${Math.random() * 100}%`);
+				if (body.image) {
+					bodyEl.style.backgroundImage = `url('${body.image}')`;
+				}
 
 				bodyEl.addEventListener('click', (e) => {
 					e.stopPropagation();
@@ -391,9 +396,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 					body.moons.forEach((moon) => {
 						const moonEl = document.createElement('div');
-						moonEl.className = 'moon';
-						moonEl.style.setProperty('--moon-color', moon.color);
+						moonEl.className = `moon celestial-body celestial-body-${body.type}`;
+						if (moon.color) {
+							moonEl.style.setProperty('--moon-color', moon.color);
+						}
 						moonEl.style.setProperty('--background-position', `${Math.random() * 100}%`);
+						if (moon.image) {
+							moonEl.style.backgroundImage = `url('${moon.image}')`;
+						}
 
 						moonEl.addEventListener('click', (e) => {
 							e.stopPropagation();
@@ -435,9 +445,14 @@ document.addEventListener('DOMContentLoaded', function () {
 		detailsContainer.innerHTML = '';
 
 		const el = document.createElement('div');
-		el.className = `celestial-detail celestial-body ${body.size}`;
-		el.style.setProperty('--celestial-color', body.color);
+		el.className = `celestial-detail celestial-body celestial-body-${body.type} ${body.size}`;
+		if (body.color) {
+			el.style.setProperty('--celestial-color', body.color);
+		}
 		el.style.setProperty('--background-position', `${Math.random() * 100}%`);
+		if (body.image) {
+			el.style.backgroundImage = `url('${body.image}')`;
+		}
 		detailsContainer.appendChild(el);
 
 		if (body.moons && body.moons.length > 0) {
@@ -446,9 +461,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 			body.moons.forEach((moon) => {
 				const moonEl = document.createElement('div');
-				moonEl.className = 'moon moon-detail';
-				moonEl.style.setProperty('--moon-color', moon.color);
+				moonEl.className = `moon moon-detail celestial-body-${moon.type}`;
+				if (moon.color) {
+					moonEl.style.setProperty('--moon-color', moon.color);
+				}
 				moonEl.style.setProperty('--background-position', `${Math.random() * 100}%`);
+				if (moon.image) {
+					moonEl.style.backgroundImage = `url('${moon.image}')`;
+				}
 
 				moonEl.addEventListener('click', (e) => {
 					e.stopPropagation();
@@ -464,11 +484,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		const propsEl = document.createElement('div');
 		propsEl.className = `properties`;
 
-		propsEl.appendChild(createPropery('Тип', body.type));
-		propsEl.appendChild(createPropery('Размер', translateSize(body.size)));
+		propsEl.appendChild(createPropery('Тип', consts.types[body.type].name));
+		propsEl.appendChild(createPropery('Размер', consts.sizes[body.size].name));
 		propsEl.appendChild(createPropery('Орбита', `${body.orbit} а.е.`));
 
-		if (body.type === 'Планета' || body.type === 'Спутник') {
+		if (body.type === consts.types.planet.value || body.type === consts.types.sputnik.value) {
 			propsEl.appendChild(createPropery('Гравитация', `${body.gravity} g`));
 			propsEl.appendChild(createPropery('Температура', `${body.temperature}°C`));
 
@@ -497,16 +517,6 @@ document.addEventListener('DOMContentLoaded', function () {
 		propertyEl.appendChild(propertyValueEl);
 
 		return propertyEl;
-	}
-
-	function translateSize(size) {
-		const sizes = {
-			small: 'Маленький',
-			medium: 'Средний',
-			large: 'Большой',
-			huge: 'Огромный',
-		};
-		return sizes[size] || size;
 	}
 
 	// Функции для работы с картой

@@ -51,6 +51,8 @@ body {
 	justify-content: center;
 	align-items: center;
 	cursor: pointer;
+	width: 35px;
+	height: 35px;
 	box-shadow: 0 0 10px var(--system-color);
 	background-image: url('images/planet_texture.jpg');
 	background-size: cover;
@@ -118,7 +120,7 @@ body {
 	color: rgba(100, 255, 100);
 	color: var(--sector-color);
 	font-size: 14px;
-	font-weight: bold;
+	font-weight: 500;
 	transform: translate(-50%, -50%);
 	pointer-events: auto;
 	cursor: default;
@@ -241,7 +243,9 @@ body {
 	flex-direction: column;
 	align-items: center;
 	position: relative;
+	width: 90px;
 	gap: 10px;
+	height: min-content;
 }
 
 .orbit-container-with-moons::before {
@@ -269,13 +273,6 @@ body {
 	width: 50px;
 	max-width: 100%;
 	aspect-ratio: 1 / 1;
-	border-radius: 50%;
-	background-image: url('images/planet_texture.jpg');
-	background-size: cover;
-	background-repeat: repeat-x;
-	background-position: var(--background-position);
-  animation: rotatePlanet 20s infinite linear;
-	box-shadow: 0 0 10px var(--celestial-color);
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -284,12 +281,43 @@ body {
 	transition: transform 0.2s;
 }
 
+.celestial-body-star,
+.celestial-body-planet,
+.celestial-body-sputnik {
+	background-image: url('images/planet_texture.jpg');
+	background-size: cover;
+	background-repeat: repeat-x;
+	background-position: var(--background-position);
+  animation: rotatePlanet 20s infinite linear;
+	box-shadow: 0 0 10px var(--celestial-color);
+	border-radius: 50%;
+}
+
+.celestial-body-station {
+	background-image: url('images/stations/3.png');
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.celestial-body-star:not(.celestial-detail):hover,
+.celestial-body-planet:not(.celestial-detail):hover,
+.celestial-body-sputnik:not(.celestial-detail):hover {
+	box-shadow: 0 0 10px 3px var(--celestial-color);
+}
+
+.celestial-body-station:hover {
+	transform: scale(1.1);
+}
+
 .celestial-detail {
 	--size-scale: 4;
 	cursor: auto;
 }
 
-.celestial-body::before {
+.celestial-body-star::before,
+.celestial-body-planet::before,
+.celestial-body-sputnik::before {
 	content: '';
 	display: block;
 	position: absolute;
@@ -300,10 +328,6 @@ body {
 	background-color: #4682B4;
 	background-color: var(--celestial-color);
 	opacity: 0.8;
-}
-
-.celestial-body:not(.celestial-detail):hover {
-	box-shadow: 0 0 10px 3px var(--celestial-color);
 }
 
 .celestial-body.small {
@@ -348,20 +372,27 @@ body {
 
 .moon {
 	position: relative;
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
-	box-shadow: 0 0 8px var(--moon-color);
-	background-image: url('images/planet_texture.jpg');
-	background-size: cover;
-	background-repeat: repeat-x;
-	background-position: var(--background-position);
-  animation: rotatePlanet 20s infinite linear;
+	width: 25px;
+	height: 25px;
 	overflow: hidden;
 	cursor: pointer;
 }
 
-.moon::before {
+.moon.celestial-body-star,
+.moon.celestial-body-planet,
+.moon.celestial-body-sputnik {
+	box-shadow: 0 0 8px var(--moon-color);
+}
+
+.moon.celestial-body-star:hover,
+.moon.celestial-body-planet:hover,
+.moon.celestial-body-sputnik:hover {
+	box-shadow: 0 0 8px 3px var(--moon-color);
+}
+
+.moon.celestial-body-star::before,
+.moon.celestial-body-planet::before,
+.moon.celestial-body-sputnik::before {
 	content: '';
 	display: block;
 	position: absolute;
@@ -372,10 +403,6 @@ body {
 	background-color: #C0C0C0;
 	background-color: var(--moon-color);
 	opacity: 0.8;
-}
-
-.moon:hover {
-	box-shadow: 0 0 8px 3px var(--moon-color);
 }
 
 .moon-name {
