@@ -475,7 +475,18 @@ document.addEventListener('DOMContentLoaded', function () {
 					showBodyInfo(moon);
 				});
 
-				moonContainerEl.appendChild(moonEl);
+				const moonElContainer = document.createElement('div');
+				moonElContainer.className = 'moon-container';
+		
+				moonElContainer.appendChild(moonEl);
+		
+				const nameMoonEl = document.createElement('div');
+				nameMoonEl.textContent = body.name;
+				nameMoonEl.className = 'moon-name';
+		
+				moonElContainer.appendChild(nameMoonEl);
+				
+				moonContainerEl.appendChild(moonElContainer);
 			});
 
 			detailsContainer.appendChild(moonContainerEl);

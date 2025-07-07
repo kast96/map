@@ -421,9 +421,22 @@ body {
 
 .moons-detail {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 20px;
+	position: relative;
+	gap: 30px;
 	width: 100%;
+	padding: 10px;
+	overflow: auto;
+}
+
+.moons-detail::before {
+	content: '';
+	display: block;
+	position: absolute;
+	top: 40px;
+	left: 40px;
+	right: 0;
+	border-bottom: 1px solid #000;
+	opacity: 0.3;
 }
 
 .moon-detail {
