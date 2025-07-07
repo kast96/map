@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	const zoomSlider = document.getElementById('zoomSlider');
 	const zoomSliderHandle = document.getElementById('zoomSliderHandle');
 	const coordinates = document.getElementById('coordinates');
+	const questPanel = document.getElementById('questPanel');
+	const questToggle = document.getElementById('questToggle');
+	const questList = document.getElementById('questList');
 
 	// Состояние карты
 	let scale = 1;
@@ -24,8 +27,13 @@ document.addEventListener('DOMContentLoaded', function () {
 	let startX, startY;
 	let touchDistance = null;
 
-	map.style.width = (window.innerWidth > options.width ? window.innerWidth : options.width) + 'px';
-	map.style.height = (window.innerHeight > options.height ? window.innerHeight : options.height) + 'px';
+	map.style.width =
+		(window.innerWidth > options.width ? window.innerWidth : options.width) +
+		'px';
+	map.style.height =
+		(window.innerHeight > options.height
+			? window.innerHeight
+			: options.height) + 'px';
 
 	// Инициализация карты
 	renderStars();
@@ -34,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	renderSystems();
 	updateMapTransform();
 	updateZoomSlider();
+	renderQuests();
 
 	// Обработчики событий
 	map.addEventListener('mousedown', startDrag);
@@ -73,8 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	function calculateMinScale() {
 		const viewportWidth = window.innerWidth;
 		const viewportHeight = window.innerHeight;
-		const minFillScaleX = viewportWidth / map.offsetWidth * 1.005;
-		const minFillScaleY = viewportHeight / map.offsetHeight * 1.005;
+		const minFillScaleX = (viewportWidth / map.offsetWidth) * 1.005;
+		const minFillScaleY = (viewportHeight / map.offsetHeight) * 1.005;
 		minScale = Math.max(minFillScaleX, minFillScaleY);
 	}
 
@@ -92,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				x: Math.random() * width,
 				y: Math.random() * height,
 				size: Math.random() * 2 + 1,
-				opacity: Math.random() * 0.8 + 0.2
+				opacity: Math.random() * 0.8 + 0.2,
 			});
 		}
 		return stars;
@@ -101,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	// Функции рендеринга
 	function renderStars() {
 		const starsCount = (map.offsetWidth * map.offsetHeight) / 2000;
-		const stars = generateStars(starsCount, map.offsetWidth, map.offsetHeight); 
+		const stars = generateStars(starsCount, map.offsetWidth, map.offsetHeight);
 
 		const container = document.createElement('div');
 		container.className = 'stars';
@@ -123,12 +132,12 @@ document.addEventListener('DOMContentLoaded', function () {
 	function renderSectors() {
 		// Группируем системы по секторам
 		const systemsBySector = {};
-		options.systems.forEach(system => {
-				const sectorName = system.sector || 'Без сектора';
-				if (!systemsBySector[sectorName]) {
-						systemsBySector[sectorName] = [];
-				}
-				systemsBySector[sectorName].push(system);
+		options.systems.forEach((system) => {
+			const sectorName = system.sector || 'Без сектора';
+			if (!systemsBySector[sectorName]) {
+				systemsBySector[sectorName] = [];
+			}
+			systemsBySector[sectorName].push(system);
 		});
 
 		const container = document.createElement('div');
@@ -139,46 +148,53 @@ document.addEventListener('DOMContentLoaded', function () {
 			if (sectorSystems.length < 3) return;
 
 			// Вычисляем выпуклую оболочку
-			const points = sectorSystems.map(sys => ({ x: sys.x, y: sys.y }));
+			const points = sectorSystems.map((sys) => ({ x: sys.x, y: sys.y }));
 			const hull = computeConvexHull(points);
-			
+
 			// Создаем контейнер для сектора
 			const sectorContainer = document.createElement('div');
 			sectorContainer.className = 'sector-container';
 			sectorContainer.style.setProperty('--sector-color', getRandomSectorColor());
-			
+
 			// Создаем сам сектор
 			const sectorEl = document.createElement('div');
 			sectorEl.className = 'sector';
 
 			// Создаем путь для clip-path
 			const padding = 100;
-			const expandedPath = expandPolygon(hull, padding)
-				.map((point, i) => `${i === 0 ? 'M' : 'L'}${point.x},${point.y}`)
-				.join(' ') + ' Z';
+			const expandedPath =
+				expandPolygon(hull, padding)
+					.map((point, i) => `${i === 0 ? 'M' : 'L'}${point.x},${point.y}`)
+					.join(' ') + ' Z';
 
 			sectorEl.style.setProperty('--sector-path', `path('${expandedPath}')`);
 			sectorEl.style.left = '0';
 			sectorEl.style.top = '0';
 			sectorEl.style.width = '100%';
 			sectorEl.style.height = '100%';
-			
+
 			// Создаем контейнер для названия
 			const nameContainer = document.createElement('div');
 			nameContainer.className = 'sector-name-container';
-			
+
 			// Вычисляем центр сектора для размещения названия
-			const center = hull.reduce((acc, point) => {
-				return { x: acc.x + point.x / hull.length, y: acc.y + point.y / hull.length };
-			}, { x: 0, y: 0 });
-			
+			const center = hull.reduce(
+				(acc, point) => {
+					return {
+						x: acc.x + point.x / hull.length,
+						y: acc.y + point.y / hull.length,
+					};
+				},
+				{ x: 0, y: 0 }
+			);
+
 			// Создаем элемент названия
 			const nameEl = document.createElement('div');
 			nameEl.className = 'sector-name';
 			nameEl.textContent = sectorName;
 			nameEl.style.left = `${center.x}px`;
 			nameEl.style.top = `${center.y}px`;
-			
+
 			// Добавляем элементы в DOM
 			nameContainer.appendChild(nameEl);
 			sectorContainer.appendChild(sectorEl);
@@ -309,9 +325,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			el.dataset.id = system.id;
 			el.style.left = `${system.x}px`;
 			el.style.top = `${system.y}px`;
-			if (system.color) {
-				el.style.setProperty('--system-color', system.color);
-			}
+			el.style.setProperty('--system-color', system.color || options.default_color);
 			el.style.setProperty('--background-position', `${Math.random() * 100}%`);
 
 			const nameEl = document.createElement('div');
@@ -364,10 +378,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 				const bodyEl = document.createElement('div');
 				bodyEl.className = `celestial-body celestial-body-${body.type} ${body.size}`;
-				if (body.color) {
-					bodyEl.style.setProperty('--celestial-color', body.color);
-				}
-				bodyEl.style.setProperty('--background-position', `${Math.random() * 100}%`);
+				bodyEl.style.setProperty('--celestial-color', body.color || options.default_color);
+				bodyEl.style.setProperty(
+					'--background-position',
+					`${Math.random() * 100}%`
+				);
 				if (body.image) {
 					bodyEl.style.backgroundImage = `url('${body.image}')`;
 				}
@@ -397,10 +412,11 @@ document.addEventListener('DOMContentLoaded', function () {
 					body.moons.forEach((moon) => {
 						const moonEl = document.createElement('div');
 						moonEl.className = `moon celestial-body celestial-body-${body.type}`;
-						if (moon.color) {
-							moonEl.style.setProperty('--moon-color', moon.color);
-						}
-						moonEl.style.setProperty('--background-position', `${Math.random() * 100}%`);
+						moonEl.style.setProperty('--moon-color', moon.color || options.default_color);
+						moonEl.style.setProperty(
+							'--background-position',
+							`${Math.random() * 100}%`
+						);
 						if (moon.image) {
 							moonEl.style.backgroundImage = `url('${moon.image}')`;
 						}
@@ -418,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function () {
 						const nameMoonEl = document.createElement('div');
 						nameMoonEl.textContent = moon.name;
 						nameMoonEl.className = 'moon-name';
-	
+
 						moonElContainer.appendChild(nameMoonEl);
 
 						moonsContainer.appendChild(moonElContainer);
@@ -446,9 +462,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		const el = document.createElement('div');
 		el.className = `celestial-detail celestial-body celestial-body-${body.type} ${body.size}`;
-		if (body.color) {
-			el.style.setProperty('--celestial-color', body.color);
-		}
+		el.style.setProperty('--celestial-color', body.color || options.default_color);
 		el.style.setProperty('--background-position', `${Math.random() * 100}%`);
 		if (body.image) {
 			el.style.backgroundImage = `url('${body.image}')`;
@@ -462,10 +476,11 @@ document.addEventListener('DOMContentLoaded', function () {
 			body.moons.forEach((moon) => {
 				const moonEl = document.createElement('div');
 				moonEl.className = `moon moon-detail celestial-body-${moon.type}`;
-				if (moon.color) {
-					moonEl.style.setProperty('--moon-color', moon.color);
-				}
-				moonEl.style.setProperty('--background-position', `${Math.random() * 100}%`);
+				moonEl.style.setProperty('--moon-color', moon.color || options.default_color);
+				moonEl.style.setProperty(
+					'--background-position',
+					`${Math.random() * 100}%`
+				);
 				if (moon.image) {
 					moonEl.style.backgroundImage = `url('${moon.image}')`;
 				}
@@ -477,15 +492,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 				const moonElContainer = document.createElement('div');
 				moonElContainer.className = 'moon-container';
-		
+
 				moonElContainer.appendChild(moonEl);
-		
+
 				const nameMoonEl = document.createElement('div');
 				nameMoonEl.textContent = body.name;
 				nameMoonEl.className = 'moon-name';
-		
+
 				moonElContainer.appendChild(nameMoonEl);
-				
+
 				moonContainerEl.appendChild(moonElContainer);
 			});
 
@@ -499,9 +514,14 @@ document.addEventListener('DOMContentLoaded', function () {
 		propsEl.appendChild(createPropery('Размер', consts.sizes[body.size].name));
 		propsEl.appendChild(createPropery('Орбита', `${body.orbit} а.е.`));
 
-		if (body.type === consts.types.planet.value || body.type === consts.types.sputnik.value) {
+		if (
+			body.type === consts.types.planet.value ||
+			body.type === consts.types.sputnik.value
+		) {
 			propsEl.appendChild(createPropery('Гравитация', `${body.gravity} g`));
-			propsEl.appendChild(createPropery('Температура', `${body.temperature}°C`));
+			propsEl.appendChild(
+				createPropery('Температура', `${body.temperature}°C`)
+			);
 
 			if (body.moons && body.moons.length > 0) {
 				propsEl.appendChild(createPropery('Спутники', body.moons.length));
@@ -546,10 +566,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function drag(e) {
 		if (!isDragging) return;
-		
+
 		const newOffsetX = e.clientX - startX;
 		const newOffsetY = e.clientY - startY;
-		
+
 		constrainOffsets(scale, newOffsetX, newOffsetY);
 		updateMapTransform();
 	}
@@ -569,14 +589,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function zoomToPoint(newScale, mouseX, mouseY) {
 		newScale = Math.min(Math.max(minScale, newScale), maxScale);
-		
+
 		// Вычисляем новые offsetX и offsetY
-		const newOffsetX = offsetX - (mouseX * (newScale / scale - 1));
-		const newOffsetY = offsetY - (mouseY * (newScale / scale - 1));
-		
+		const newOffsetX = offsetX - mouseX * (newScale / scale - 1);
+		const newOffsetY = offsetY - mouseY * (newScale / scale - 1);
+
 		// Ограничиваем перемещение
 		constrainOffsets(newScale, newOffsetX, newOffsetY);
-		
+
 		scale = newScale;
 		updateMapTransform();
 		updateZoomSlider();
@@ -587,13 +607,19 @@ document.addEventListener('DOMContentLoaded', function () {
 		const viewportHeight = window.innerHeight;
 		const mapWidth = map.offsetWidth * currentScale;
 		const mapHeight = map.offsetHeight * currentScale;
-		
+
 		// Определяем, по каким осям карта больше viewport
 		const isWider = mapWidth > viewportWidth;
 		const isTaller = mapHeight > viewportHeight;
 
-		const maxOffsetX = map.offsetWidth + (map.offsetWidth * (currentScale - 1)) / 2 - viewportWidth;
-		const maxOffsetY = map.offsetHeight + (map.offsetHeight * (currentScale - 1)) / 2 - viewportHeight;
+		const maxOffsetX =
+			map.offsetWidth +
+			(map.offsetWidth * (currentScale - 1)) / 2 -
+			viewportWidth;
+		const maxOffsetY =
+			map.offsetHeight +
+			(map.offsetHeight * (currentScale - 1)) / 2 -
+			viewportHeight;
 		const minOffsetX = (map.offsetWidth - mapWidth) / 2;
 		const minOffsetY = (map.offsetHeight - mapHeight) / 2;
 
@@ -649,7 +675,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			// Перемещение
 			const newOffsetX = e.touches[0].clientX - startX;
 			const newOffsetY = e.touches[0].clientY - startY;
-			
+
 			constrainOffsets(scale, newOffsetX, newOffsetY);
 
 			updateMapTransform();
@@ -732,4 +758,224 @@ document.addEventListener('DOMContentLoaded', function () {
 		const y = (e.clientY - rect.top) / scale;
 		coordinates.textContent = `${Math.round(x)},${Math.round(y)}`;
 	}
+
+	function renderQuests() {
+		questList.innerHTML = '';
+
+		// Рендерим активные квесты
+		const activeTab = document.querySelector('.quest-tab.active');
+		const tabType = activeTab ? activeTab.dataset.tab : 'active';
+
+		quests[tabType].forEach((quest) => {
+			const questEl = document.createElement('div');
+			questEl.className = 'quest-item';
+
+			questEl.innerHTML = `
+				<div class='quest-title'>${quest.title}</div>
+				<div class='quest-description'>${quest.description}</div>
+			`;
+
+			const tasksContainer = document.createElement('div');
+			quest.tasks.forEach((task) => {
+				const taskEl = document.createElement('div');
+				taskEl.className = `task-item ${task.status}`;
+
+				let locationText = '';
+				if (task.location) {
+					locationText = getLocationText(task.location);
+				}
+
+				taskEl.innerHTML = `
+					<div class='task-status ${task.status}'></div>
+					<div class='task-title'>${task.title}</div>
+					${locationText ? `<div class='task-location'>${locationText}</div>` : ''}
+					${task.location ? `<button class='show-location' data-task-id='${task.id}'>Показать</button>` : ''}
+				`;
+
+				tasksContainer.appendChild(taskEl);
+			});
+
+			questEl.appendChild(tasksContainer);
+			questList.appendChild(questEl);
+		});
+
+		// Добавляем обработчики для кнопок показа локации
+		document.querySelectorAll('.show-location').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const taskId = parseInt(e.target.dataset.taskId);
+				highlightTaskLocation(taskId);
+			});
+		});
+	}
+
+	function getLocationText(location) {
+		switch (location.type) {
+			case 'sector':
+				return location.id;
+			case 'system':
+				const system = options.systems.find((s) => s.id === location.id);
+				return system ? `${system.sector} - ${system.name}` : '';
+			case 'planet':
+				const systemForPlanet = options.systems.find((s) => s.id === location.systemId);
+				if (systemForPlanet) {
+					const planet = systemForPlanet.celestialBodies.find((b) => b.name === location.name);
+					if (planet) return `${systemForPlanet.sector} - ${systemForPlanet.name} - ${planet.name}`;
+				}
+				return '';
+			case 'moon':
+				const systemForMoon = options.systems.find((s) => s.id === location.systemId);
+				if (systemForMoon) {
+					const planet = systemForMoon.celestialBodies.find((b) => b.name === location.celestialName);
+					if (planet && planet.moons) {
+						const moon = planet.moons.find((b) => b.name === location.name);
+						if (moon) return `${systemForMoon.sector} - ${systemForMoon.name} - ${planet.name} - ${moon.name}`;
+					}
+				}
+				return '';
+			default:
+				return '';
+		}
+	}
+
+	function highlightTaskLocation(taskId) {
+		// Сначала сбрасываем все подсветки
+		resetHighlights();
+
+		// Находим задачу
+		let task = null;
+		for (const category of ['active', 'completed']) {
+			for (const quest of quests[category]) {
+				const foundTask = quest.tasks.find((t) => t.id === taskId);
+				if (foundTask) {
+					task = foundTask;
+					break;
+				}
+			}
+			if (task) break;
+		}
+
+		if (!task || !task.location) return;
+
+		// Подсвечиваем локацию в зависимости от типа
+		switch (task.location.type) {
+			case 'sector':
+				highlightTaskLocationSector(task.location.id);
+				break;
+
+			case 'system':
+				highlightTaskLocationSystem(task.location.id);
+
+				// Центрируем карту на системе
+				const system = options.systems.find((s) => s.id === task.location.id);
+				if (system) {
+					const centerX = window.innerWidth / 2 - system.x * scale;
+					const centerY = window.innerHeight / 2 - system.y * scale;
+					offsetX = centerX;
+					offsetY = centerY;
+					updateMapTransform();
+					
+					moveMap(centerX, centerY);
+				}
+				break;
+
+			case 'planet':
+				// Подсвечиваем планету (при открытии информации о системе)
+				const systemForPlanet = options.systems.find((s) => s.id === task.location.systemId);
+				if (systemForPlanet) {
+					
+					// Открываем информацию о системе
+					showSystemInfo(systemForPlanet);
+					
+					// После небольшой задержки подсвечиваем планету
+					setTimeout(() => {
+						highlightTaskLocationSystem(systemForPlanet.id);
+						highlightTaskLocationPlanet(task.location.name);
+					}, 300);
+				}
+				break;
+
+			case 'moon':
+				const systemForMoon = options.systems.find((s) => s.id === task.location.systemId);
+				if (systemForMoon) {
+					const planet = systemForMoon.celestialBodies.find((b) => b.name === task.location.celestialName);
+					if (planet && planet.moons) {
+						const moon = planet.moons.find((b) => b.name === task.location.name);
+						if (moon) {
+							showSystemInfo(systemForMoon);
+
+							// После небольшой задержки подсвечиваем спутник
+							setTimeout(() => {
+								highlightTaskLocationSystem(systemForMoon.id);
+								highlightTaskLocationMoon(moon.name);
+							}, 300);
+						}
+					}
+
+				}
+				break;
+		}
+	}
+
+	function highlightTaskLocationSector(sectorName) {
+		document.querySelectorAll('.sector-name').forEach((sectorNameEl) => {
+			if (sectorNameEl.textContent.includes(sectorName)) {
+				sectorNameEl.closest('.sector-container').classList.add('highlight-sector');
+			}
+		});
+	}
+
+	function highlightTaskLocationSystem(systemId) {
+		const systemEl = document.querySelector(`.system[data-id='${systemId}']`);
+		if (systemEl) {
+			systemEl.classList.add('highlight-system');
+		}
+	}
+
+	function highlightTaskLocationPlanet(planetName) {
+		document.querySelectorAll('.celestial-name').forEach((planetNameEl) => {
+			if (planetNameEl.textContent.includes(planetName)) {
+				planetNameEl.closest('.orbit-container').classList.add('highlight-planet');
+			}
+		});
+	}
+
+	function highlightTaskLocationMoon(moonName) {
+		document.querySelectorAll('.moon-name').forEach((moonNameEl) => {
+			if (moonNameEl.textContent.includes(moonName)) {
+				moonNameEl.closest('.moon-container').classList.add('highlight-moon');
+			}
+		});
+	}
+
+	function resetHighlights() {
+		document.querySelectorAll('.highlight-sector').forEach((el) => {
+			el.classList.remove('highlight-sector');
+		});
+		document.querySelectorAll('.highlight-system').forEach((el) => {
+			el.classList.remove('highlight-system');
+		});
+		document.querySelectorAll('.highlight-planet').forEach((el) => {
+			el.classList.remove('highlight-planet');
+		});
+		document.querySelectorAll('.highlight-moon').forEach((el) => {
+			el.classList.remove('highlight-moon');
+		});
+	}
+
+	function moveMap(x, y, newScale) {
+		if (newScale != scale) scale = newScale;
+	}
+
+	// Обработчики для панели квестов
+	questToggle.addEventListener('click', () => {
+		questPanel.classList.toggle('open');
+	});
+
+	document.querySelectorAll('.quest-tab').forEach((tab) => {
+		tab.addEventListener('click', () => {
+			document.querySelectorAll('.quest-tab').forEach((t) => t.classList.remove('active'));
+			tab.classList.add('active');
+			renderQuests();
+		});
+	});
 });

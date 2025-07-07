@@ -1,6 +1,7 @@
 const options = {
 	width: 2000,
 	height: 1000,
+	default_color: '#999',
 	systems: [
 		{
 			id: 999,
