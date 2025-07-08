@@ -612,14 +612,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		const isWider = mapWidth > viewportWidth;
 		const isTaller = mapHeight > viewportHeight;
 
-		const maxOffsetX =
-			map.offsetWidth +
-			(map.offsetWidth * (currentScale - 1)) / 2 -
-			viewportWidth;
-		const maxOffsetY =
-			map.offsetHeight +
-			(map.offsetHeight * (currentScale - 1)) / 2 -
-			viewportHeight;
+		const maxOffsetX = map.offsetWidth + (map.offsetWidth * (currentScale - 1)) / 2 -	viewportWidth;
+		const maxOffsetY = map.offsetHeight + (map.offsetHeight * (currentScale - 1)) / 2 -	viewportHeight;
 		const minOffsetX = (map.offsetWidth - mapWidth) / 2;
 		const minOffsetY = (map.offsetHeight - mapHeight) / 2;
 
@@ -811,24 +805,22 @@ document.addEventListener('DOMContentLoaded', function () {
 	function getLocationText(location) {
 		switch (location.type) {
 			case 'sector':
-				return location.id;
+				return location.sector;
 			case 'system':
-				const system = options.systems.find((s) => s.id === location.id);
+				const system = getSystemByName(location.system);
 				return system ? `${system.sector} - ${system.name}` : '';
 			case 'planet':
-				const systemForPlanet = options.systems.find((s) => s.id === location.systemId);
-				if (systemForPlanet) {
-					const planet = systemForPlanet.celestialBodies.find((b) => b.name === location.name);
-					if (planet) return `${systemForPlanet.sector} - ${systemForPlanet.name} - ${planet.name}`;
+				if (planetSystem = getSystemByName(location.system)) {
+					const planet = getPlanetByName(location.planet, planetSystem);
+					if (planet) return `${planetSystem.sector} - ${planetSystem.name} - ${planet.name}`;
 				}
 				return '';
 			case 'moon':
-				const systemForMoon = options.systems.find((s) => s.id === location.systemId);
-				if (systemForMoon) {
-					const planet = systemForMoon.celestialBodies.find((b) => b.name === location.celestialName);
+				if (moonSystem = getSystemByName(location.system)) {
+					const planet = getPlanetByName(location.planet, moonSystem);
 					if (planet && planet.moons) {
-						const moon = planet.moons.find((b) => b.name === location.name);
-						if (moon) return `${systemForMoon.sector} - ${systemForMoon.name} - ${planet.name} - ${moon.name}`;
+						const moon = getMoonByName(location.moon, planet);
+						if (moon) return `${moonSystem.sector} - ${moonSystem.name} - ${planet.name} - ${moon.name}`;
 					}
 				}
 				return '';
@@ -859,92 +851,94 @@ document.addEventListener('DOMContentLoaded', function () {
 		// Подсвечиваем локацию в зависимости от типа
 		switch (task.location.type) {
 			case 'sector':
-				highlightTaskLocationSector(task.location.id);
+				highlightTaskLocationSector(task.location.sector);
 				break;
 
 			case 'system':
-				highlightTaskLocationSystem(task.location.id);
-
-				// Центрируем карту на системе
-				const system = options.systems.find((s) => s.id === task.location.id);
-				if (system) {
-					const centerX = window.innerWidth / 2 - system.x * scale;
-					const centerY = window.innerHeight / 2 - system.y * scale;
-					offsetX = centerX;
-					offsetY = centerY;
-					updateMapTransform();
-					
-					moveMap(centerX, centerY);
+				if (system = getSystemByName(task.location.system)) {
+					highlightTaskLocationSystem(task.location.system);
+					moveMap(system.x, system.y);
 				}
 				break;
 
 			case 'planet':
-				// Подсвечиваем планету (при открытии информации о системе)
-				const systemForPlanet = options.systems.find((s) => s.id === task.location.systemId);
-				if (systemForPlanet) {
-					
-					// Открываем информацию о системе
-					showSystemInfo(systemForPlanet);
-					
-					// После небольшой задержки подсвечиваем планету
+				if (system = getSystemByName(task.location.system)) {
+					highlightTaskLocationSystem(task.location.system);
+					showSystemInfo(system);
+					moveMap(system.x, system.y);
+
 					setTimeout(() => {
-						highlightTaskLocationSystem(systemForPlanet.id);
-						highlightTaskLocationPlanet(task.location.name);
+						highlightTaskLocationPlanet(task.location.planet);
 					}, 300);
 				}
 				break;
 
 			case 'moon':
-				const systemForMoon = options.systems.find((s) => s.id === task.location.systemId);
-				if (systemForMoon) {
-					const planet = systemForMoon.celestialBodies.find((b) => b.name === task.location.celestialName);
-					if (planet && planet.moons) {
-						const moon = planet.moons.find((b) => b.name === task.location.name);
-						if (moon) {
-							showSystemInfo(systemForMoon);
+				if (system = getSystemByName(task.location.system)) {
+					if (planet = getPlanetByName(task.location.planet, system)) {
+						if (planet && planet.moons) {
+							if (moon = getMoonByName(task.location.moon, planet)) {
+								highlightTaskLocationSystem(task.location.system);
+								showSystemInfo(system);
+								moveMap(system.x, system.y);
 
-							// После небольшой задержки подсвечиваем спутник
-							setTimeout(() => {
-								highlightTaskLocationSystem(systemForMoon.id);
-								highlightTaskLocationMoon(moon.name);
-							}, 300);
+								setTimeout(() => {
+									highlightTaskLocationMoon(moon.name);
+								}, 300);
+							}
 						}
 					}
-
+					highlightTaskLocationSystem(task.location.system);
 				}
 				break;
 		}
 	}
 
-	function highlightTaskLocationSector(sectorName) {
-		document.querySelectorAll('.sector-name').forEach((sectorNameEl) => {
-			if (sectorNameEl.textContent.includes(sectorName)) {
-				sectorNameEl.closest('.sector-container').classList.add('highlight-sector');
+	function getTaskLocation(name, selector, containerSelector) {
+		let element = null;
+		document.querySelectorAll(selector).forEach((nameEl) => {
+			if (nameEl.textContent.includes(name)) {
+				element = nameEl.closest(containerSelector);
+				return;
 			}
 		});
+		return element;
 	}
 
-	function highlightTaskLocationSystem(systemId) {
-		const systemEl = document.querySelector(`.system[data-id='${systemId}']`);
-		if (systemEl) {
-			systemEl.classList.add('highlight-system');
+	function highlightTaskLocationSector(sectorName) {
+		if (element = getTaskLocation(sectorName, '.sector-name', '.sector-container')) {
+			element.classList.add('highlight-sector');
+		}
+	}
+
+	function highlightTaskLocationSystem(systemName) {
+		if (element = getTaskLocation(systemName, '.system-name', '.system')) {
+			element.classList.add('highlight-system');
 		}
 	}
 
 	function highlightTaskLocationPlanet(planetName) {
-		document.querySelectorAll('.celestial-name').forEach((planetNameEl) => {
-			if (planetNameEl.textContent.includes(planetName)) {
-				planetNameEl.closest('.orbit-container').classList.add('highlight-planet');
-			}
-		});
+		if (element = getTaskLocation(planetName, '.celestial-name', '.orbit-container')) {
+			element.classList.add('highlight-planet');
+		}
 	}
 
 	function highlightTaskLocationMoon(moonName) {
-		document.querySelectorAll('.moon-name').forEach((moonNameEl) => {
-			if (moonNameEl.textContent.includes(moonName)) {
-				moonNameEl.closest('.moon-container').classList.add('highlight-moon');
-			}
-		});
+		if (element = getTaskLocation(moonName, '.moon-name', '.moon-container')) {
+			element.classList.add('highlight-moon');
+		}
+	}
+
+	function getSystemByName(systemName) {
+		return options.systems.find((s) => s.name === systemName) || null;
+	}
+
+	function getPlanetByName(planetName, system) {
+		return system.celestialBodies.find((s) => s.name === planetName) || null;
+	}
+	
+	function getMoonByName(moonName, planet) {
+		return planet.moons.find((s) => s.name === moonName) || null;
 	}
 
 	function resetHighlights() {
@@ -962,8 +956,14 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 	}
 
-	function moveMap(x, y, newScale) {
-		if (newScale != scale) scale = newScale;
+	function moveMap(x, y, newScale = scale) {
+		const newOffsetX = map.offsetWidth / 2 * (newScale - 1) + window.innerWidth / 2 - x * newScale;
+		const newOffsetY = map.offsetHeight / 2 * (newScale - 1) + window.innerHeight / 2 - y * newScale;
+
+		// Ограничиваем перемещение
+		constrainOffsets(newScale, newOffsetX, newOffsetY);
+
+		updateMapTransform();
 	}
 
 	// Обработчики для панели квестов
