@@ -7,12 +7,13 @@ document.addEventListener('DOMContentLoaded', function () {
 	const bodyInfo = document.getElementById('bodyInfo');
 	const closeSystemInfo = document.getElementById('closeSystemInfo');
 	const closeBodyInfo = document.getElementById('closeBodyInfo');
+	const closeQuestInfo = document.getElementById('closeQuestInfo');
 	const zoomInBtn = document.getElementById('zoomIn');
 	const zoomOutBtn = document.getElementById('zoomOut');
 	const zoomSlider = document.getElementById('zoomSlider');
 	const zoomSliderHandle = document.getElementById('zoomSliderHandle');
 	const coordinates = document.getElementById('coordinates');
-	const questPanel = document.getElementById('questPanel');
+	const questInfo = document.getElementById('questInfo');
 	const questToggle = document.getElementById('questToggle');
 	const questList = document.getElementById('questList');
 
@@ -77,6 +78,12 @@ document.addEventListener('DOMContentLoaded', function () {
 	closeBodyInfo.addEventListener('click', () =>
 		bodyInfo.classList.remove('is-open')
 	);
+	closeQuestInfo.addEventListener('click', () => {
+		questInfo.classList.remove('is-open');
+	});
+	map.addEventListener('click', () => {
+		resetHighlights();
+	});
 
 	// Рассчитываем минимальный масштаб при загрузке
 	function calculateMinScale() {
@@ -496,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				moonElContainer.appendChild(moonEl);
 
 				const nameMoonEl = document.createElement('div');
-				nameMoonEl.textContent = body.name;
+				nameMoonEl.textContent = moon.name;
 				nameMoonEl.className = 'moon-name';
 
 				moonElContainer.appendChild(nameMoonEl);
@@ -757,7 +764,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		questList.innerHTML = '';
 
 		// Рендерим активные квесты
-		const activeTab = document.querySelector('.quest-tab.active');
+		const activeTab = document.querySelector('.quest-tab.is-active');
 		const tabType = activeTab ? activeTab.dataset.tab : 'active';
 
 		quests[tabType].forEach((quest) => {
@@ -765,11 +772,14 @@ document.addEventListener('DOMContentLoaded', function () {
 			questEl.className = 'quest-item';
 
 			questEl.innerHTML = `
-				<div class='quest-title'>${quest.title}</div>
-				<div class='quest-description'>${quest.description}</div>
+				<div class='quest-header'>
+					<div class='quest-title'>${quest.title}</div>
+					<div class='quest-description'>${quest.description}</div>
+				</div>
 			`;
 
 			const tasksContainer = document.createElement('div');
+			tasksContainer.className = 'quest-body';
 			quest.tasks.forEach((task) => {
 				const taskEl = document.createElement('div');
 				taskEl.className = `task-item ${task.status}`;
@@ -780,10 +790,26 @@ document.addEventListener('DOMContentLoaded', function () {
 				}
 
 				taskEl.innerHTML = `
-					<div class='task-status ${task.status}'></div>
-					<div class='task-title'>${task.title}</div>
-					${locationText ? `<div class='task-location'>${locationText}</div>` : ''}
-					${task.location ? `<button class='show-location' data-task-id='${task.id}'>Показать</button>` : ''}
+					<div class='task-left'>
+						<div class='task-header'>
+							<div class='task-status'></div>
+							<div class='task-title'>${task.title}</div>
+						</div>
+						${locationText ? `
+							<div class='task-location'>
+								${locationText ? `<div class='task-location-text'>${locationText}</div>` : ''}
+							</div>
+						`	: ''}
+					</div>
+					${task.location ? `
+						<div class='task-right'>
+							${task.location ? `<button class='show-location' data-task-id='${task.id}'>
+								<svg class='show-location-icon' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+									<path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/>
+								</svg>
+							</button>` : ''}
+						</div>
+					`	: ''}
 				`;
 
 				tasksContainer.appendChild(taskEl);
@@ -795,8 +821,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		// Добавляем обработчики для кнопок показа локации
 		document.querySelectorAll('.show-location').forEach((btn) => {
-			btn.addEventListener('click', (e) => {
-				const taskId = parseInt(e.target.dataset.taskId);
+			btn.addEventListener('click', () => {
+				const taskId = parseInt(btn.dataset.taskId);
 				highlightTaskLocation(taskId);
 			});
 		});
@@ -805,7 +831,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	function getLocationText(location) {
 		switch (location.type) {
 			case 'sector':
-				return location.sector;
+				return location.sector || '';
 			case 'system':
 				const system = getSystemByName(location.system);
 				return system ? `${system.sector} - ${system.name}` : '';
@@ -832,7 +858,6 @@ document.addEventListener('DOMContentLoaded', function () {
 	function highlightTaskLocation(taskId) {
 		// Сначала сбрасываем все подсветки
 		resetHighlights();
-
 		// Находим задачу
 		let task = null;
 		for (const category of ['active', 'completed']) {
@@ -852,11 +877,15 @@ document.addEventListener('DOMContentLoaded', function () {
 		switch (task.location.type) {
 			case 'sector':
 				highlightTaskLocationSector(task.location.sector);
+				if (center = getSectorCenter(task.location.sector)) {
+					moveMap(center.x, center.y);
+				}
 				break;
 
 			case 'system':
 				if (system = getSystemByName(task.location.system)) {
 					highlightTaskLocationSystem(task.location.system);
+					if (scale < 1.5) scale = 1.5;
 					moveMap(system.x, system.y);
 				}
 				break;
@@ -865,6 +894,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				if (system = getSystemByName(task.location.system)) {
 					highlightTaskLocationSystem(task.location.system);
 					showSystemInfo(system);
+					if (scale < 1.5) scale = 1.5;
 					moveMap(system.x, system.y);
 
 					setTimeout(() => {
@@ -880,6 +910,7 @@ document.addEventListener('DOMContentLoaded', function () {
 							if (moon = getMoonByName(task.location.moon, planet)) {
 								highlightTaskLocationSystem(task.location.system);
 								showSystemInfo(system);
+								if (scale < 1.5) scale = 1.5;
 								moveMap(system.x, system.y);
 
 								setTimeout(() => {
@@ -941,6 +972,30 @@ document.addEventListener('DOMContentLoaded', function () {
 		return planet.moons.find((s) => s.name === moonName) || null;
 	}
 
+	function getSectorCenter(sectorName) {
+		const systems = options.systems.filter((s) => s.sector === sectorName);
+		if (!systems) return;
+		
+		let minX, maxX, minY, maxY;
+
+		systems.forEach((system, index) => {
+			if (index) {
+				if (system.x < minX) minX = system.x;
+				if (system.x > maxX) maxX = system.x;
+				if (system.y < minY) minY = system.y;
+				if (system.y > maxY) maxY = system.y;
+			} else {
+				minX = maxX = system.x;
+				minY = maxY = system.y;
+			}
+		});
+
+		return {
+			x: (minX + maxX) / 2,
+			y: (minY + maxY) / 2
+		}
+	}
+
 	function resetHighlights() {
 		document.querySelectorAll('.highlight-sector').forEach((el) => {
 			el.classList.remove('highlight-sector');
@@ -968,13 +1023,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	// Обработчики для панели квестов
 	questToggle.addEventListener('click', () => {
-		questPanel.classList.toggle('open');
+		questInfo.classList.toggle('is-open');
 	});
 
 	document.querySelectorAll('.quest-tab').forEach((tab) => {
 		tab.addEventListener('click', () => {
-			document.querySelectorAll('.quest-tab').forEach((t) => t.classList.remove('active'));
-			tab.classList.add('active');
+			document.querySelectorAll('.quest-tab').forEach((t) => t.classList.remove('is-active'));
+			tab.classList.add('is-active');
 			renderQuests();
 		});
 	});

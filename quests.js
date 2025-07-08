@@ -26,7 +26,7 @@ const quests = {
         {
           id: 4,
           title: "Посетить Луну",
-          location: { type: "moon", system: "Солнечная система", planet: "Мюллер", moon: "Кулак Мюллера" },
+          location: { type: "moon", system: "Солнечная система", planet: "Земля", moon: "Луна" },
           status: "active",
         },
       ],

@@ -24,15 +24,20 @@
 
 			<div class="coordinates" id="coordinates">0, 0</div>
 
-			<div class="quest-panel" id="questPanel">
-				<button class="quest-toggle" id="questToggle">Квесты</button>
-				<div class="quest-container">
-					<div class="quest-tabs">
-						<button class="quest-tab active" data-tab="active">Активные</button>
-						<button class="quest-tab" data-tab="completed">Завершенные</button>
-					</div>
-					<div class="quest-list" id="questList"></div>
+			<div class="menu">
+				<button class="menu-item" id="questToggle">Задания</button>
+			</div>
+			
+			<div id="questInfo" class="quest-info">
+				<div class="quest-info-header">
+					<span class="title">Задания</span>
+					<button id="closeQuestInfo" class="close-btn"></button>
 				</div>
+				<div class="quest-tabs">
+					<button class="quest-tab is-active" data-tab="active">Активные</button>
+					<button class="quest-tab" data-tab="completed">Завершенные</button>
+				</div>
+				<div class="quest-list" id="questList"></div>
 			</div>
 
 			<div id="systemInfo" class="system-info">
