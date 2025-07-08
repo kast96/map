@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	const questInfo = document.getElementById('questInfo');
 	const questToggle = document.getElementById('questToggle');
 	const questList = document.getElementById('questList');
+	const exportStore = document.getElementById('exportStore');
+	const importStore = document.getElementById('importStore');
+	const storeFile = document.getElementById('storeFile');
 
 	// Состояние карты
 	let scale = 1;
@@ -27,6 +30,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	let isZoomDragging = false;
 	let startX, startY;
 	let touchDistance = null;
+	let store = {
+		quests: []
+	};
 
 	map.style.width =
 		(window.innerWidth > options.width ? window.innerWidth : options.width) +
@@ -83,6 +89,37 @@ document.addEventListener('DOMContentLoaded', function () {
 	});
 	map.addEventListener('click', () => {
 		resetHighlights();
+	});
+
+	importStore.addEventListener('click', () => {
+		storeFile.click();
+	});
+
+	exportStore.addEventListener('click', () => {
+		const data = JSON.stringify(store, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'store.json';
+    a.click();
+	});
+
+	storeFile.addEventListener('change', (e) => {
+		const file = e.target.files[0];
+
+		const reader = new FileReader();
+
+		reader.onload = (e) => {
+			store = JSON.parse(e.target.result);
+			renderQuests();
+		};
+
+		reader.onerror = (e) => {
+			console.error('Ошибка FileReader:', e);
+		};
+
+		reader.readAsText(file);
 	});
 
 	// Рассчитываем минимальный масштаб при загрузке
@@ -767,57 +804,59 @@ document.addEventListener('DOMContentLoaded', function () {
 		const activeTab = document.querySelector('.quest-tab.is-active');
 		const tabType = activeTab ? activeTab.dataset.tab : 'active';
 
-		quests[tabType].forEach((quest) => {
-			const questEl = document.createElement('div');
-			questEl.className = 'quest-item';
+		if (store && store.quests && store.quests[tabType]) {
+			store.quests[tabType].forEach((quest) => {
+				const questEl = document.createElement('div');
+				questEl.className = 'quest-item';
 
-			questEl.innerHTML = `
-				<div class='quest-header'>
-					<div class='quest-title'>${quest.title}</div>
-					<div class='quest-description'>${quest.description}</div>
-				</div>
-			`;
-
-			const tasksContainer = document.createElement('div');
-			tasksContainer.className = 'quest-body';
-			quest.tasks.forEach((task) => {
-				const taskEl = document.createElement('div');
-				taskEl.className = `task-item ${task.status}`;
-
-				let locationText = '';
-				if (task.location) {
-					locationText = getLocationText(task.location);
-				}
-
-				taskEl.innerHTML = `
-					<div class='task-left'>
-						<div class='task-header'>
-							<div class='task-status'></div>
-							<div class='task-title'>${task.title}</div>
-						</div>
-						${locationText ? `
-							<div class='task-location'>
-								${locationText ? `<div class='task-location-text'>${locationText}</div>` : ''}
-							</div>
-						`	: ''}
+				questEl.innerHTML = `
+					<div class='quest-header'>
+						<div class='quest-title'>${quest.title}</div>
+						<div class='quest-description'>${quest.description}</div>
 					</div>
-					${task.location ? `
-						<div class='task-right'>
-							${task.location ? `<button class='show-location' data-task-id='${task.id}'>
-								<svg class='show-location-icon' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-									<path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/>
-								</svg>
-							</button>` : ''}
-						</div>
-					`	: ''}
 				`;
 
-				tasksContainer.appendChild(taskEl);
-			});
+				const tasksContainer = document.createElement('div');
+				tasksContainer.className = 'quest-body';
+				quest.tasks.forEach((task) => {
+					const taskEl = document.createElement('div');
+					taskEl.className = `task-item ${task.status}`;
 
-			questEl.appendChild(tasksContainer);
-			questList.appendChild(questEl);
-		});
+					let locationText = '';
+					if (task.location) {
+						locationText = getLocationText(task.location);
+					}
+
+					taskEl.innerHTML = `
+						<div class='task-left'>
+							<div class='task-header'>
+								<div class='task-status'></div>
+								<div class='task-title'>${task.title}</div>
+							</div>
+							${locationText ? `
+								<div class='task-location'>
+									${locationText ? `<div class='task-location-text'>${locationText}</div>` : ''}
+								</div>
+							`	: ''}
+						</div>
+						${task.location ? `
+							<div class='task-right'>
+								${task.location ? `<button class='show-location' data-task-id='${task.id}'>
+									<svg class='show-location-icon' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+										<path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/>
+									</svg>
+								</button>` : ''}
+							</div>
+						`	: ''}
+					`;
+
+					tasksContainer.appendChild(taskEl);
+				});
+
+				questEl.appendChild(tasksContainer);
+				questList.appendChild(questEl);
+			});
+		}
 
 		// Добавляем обработчики для кнопок показа локации
 		document.querySelectorAll('.show-location').forEach((btn) => {
@@ -861,7 +900,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		// Находим задачу
 		let task = null;
 		for (const category of ['active', 'completed']) {
-			for (const quest of quests[category]) {
+			for (const quest of store.quests[category]) {
 				const foundTask = quest.tasks.find((t) => t.id === taskId);
 				if (foundTask) {
 					task = foundTask;

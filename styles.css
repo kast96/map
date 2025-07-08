@@ -536,7 +536,10 @@ body {
 }
 
 .menu {
+	display: flex;
+	flex-direction: column;
 	position: absolute;
+	gap: 5px;
 	top: 20px;
 	right: 20px;
 	z-index: 10;
@@ -770,4 +773,11 @@ body {
 
 .highlight-moon .celestial-body::after {
 	background: var(--moon-color);
+}
+
+.store-file {
+	width: 0;
+	height: 0;
+	opacity: 0;
+	overflow: hidden;
 }
