@@ -35,8 +35,12 @@ document.addEventListener('DOMContentLoaded', function () {
 	let isZoomDragging = false;
 	let startX, startY;
 	let touchDistance = null;
+	let questStatuses = ['active', 'completed'];
 	let store = {
-		quests: []
+		quests: {
+			active: [],
+			completed: [],
+		}
 	};
 
 	map.style.width =
@@ -834,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 				const questTitleEl = document.createElement('div');
 				questTitleEl.className = 'quest-title';
-				questTitleEl.textContent = quest.title;
+				questTitleEl.textContent = quest.title || 'Название не указано';
 				questHeaderEl.appendChild(questTitleEl);
 
 				questTitleEl.addEventListener('dblclick', () => {
@@ -866,7 +870,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 				const questDescriptionEl = document.createElement('div');
 				questDescriptionEl.className = 'quest-description';
-				questDescriptionEl.innerHTML = quest.description;
+				questDescriptionEl.innerHTML = quest.description || 'Описание не указано';
 				questHeaderEl.appendChild(questDescriptionEl);
 
 				questDescriptionEl.addEventListener('dblclick', () => {
@@ -880,7 +884,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 				const tasksContainer = document.createElement('div');
 				tasksContainer.className = 'quest-body';
-				quest.tasks.forEach((task, indexTask) => {
+				quest.tasks.forEach(task => {
 					const taskEl = document.createElement('div');
 					taskEl.className = `task-item ${task.status}`;
 
@@ -915,7 +919,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 					const taskTitleEl = document.createElement('div');
 					taskTitleEl.className = 'task-title';
-					taskTitleEl.textContent = task.title;
+					taskTitleEl.textContent = task.title || 'Название не указано';
 					taskHeaderEl.appendChild(taskTitleEl);
 
 					taskTitleEl.addEventListener('dblclick', () => {
@@ -927,34 +931,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
 					taskLeftEl.appendChild(taskHeaderEl);
 
-					if (locationText) {
-						const taskLocationEl = document.createElement('div');
-						taskLocationEl.className = 'task-location';
+					const taskLocationEl = document.createElement('div');
+					taskLocationEl.className = 'task-location';
 
-						const taskLocationTextEl = document.createElement('div');
-						taskLocationTextEl.className = 'task-location-text';
-						taskLocationTextEl.textContent = locationText;
-						taskLocationEl.appendChild(taskLocationTextEl);
+					const taskLocationTextEl = document.createElement('div');
+					taskLocationTextEl.className = 'task-location-text';
+					taskLocationTextEl.textContent = locationText || 'Локация не указана';
+					taskLocationEl.appendChild(taskLocationTextEl);
 
-						taskLocationEl.addEventListener('dblclick', () => {
-							showEditPopup(
-								task.location,
-								(value) => {
-									task.location = null;
-									['sector', 'system', 'planet', 'moon'].forEach(type => {
-										if (!value[type]) return;
-										if (!task.location) task.location = {};
-										task.location.type = type;
-										task.location[type] = value[type];
-									});
-									renderQuests();
-								},
-								'location'
-							);
-						});
+					taskLocationEl.addEventListener('dblclick', () => {
+						showEditPopup(
+							task.location,
+							(value) => {
+								task.location = null;
+								['sector', 'system', 'planet', 'moon'].forEach(type => {
+									if (!value[type]) return;
+									if (!task.location) task.location = {};
+									task.location.type = type;
+									task.location[type] = value[type];
+								});
+								renderQuests();
+							},
+							'location'
+						);
+					});
 
-						taskLeftEl.appendChild(taskLocationEl);
-					}
+					taskLeftEl.appendChild(taskLocationEl);
 
 					taskEl.appendChild(taskLeftEl);
 
@@ -976,10 +978,58 @@ document.addEventListener('DOMContentLoaded', function () {
 					tasksContainer.appendChild(taskEl);
 				});
 
+				const addTaskEl = document.createElement('button');
+				addTaskEl.className = 'button add-task';
+				addTaskEl.textContent = 'Добавить подзадачу';
+
+				tasksContainer.appendChild(addTaskEl);
+
+				addTaskEl.addEventListener('click', () => {
+					let newId = 1;
+					if (!(quest.tasks instanceof Array)) quest.tasks = [];
+					const maxId = Math.max.apply(null, (quest.tasks.map(task => parseInt(task.id)) || []));
+					if (maxId >= newId) newId = maxId + 1;
+
+					quest.tasks.push({
+						id: newId,
+						title: 'Название подзадачи',
+						status: 'active',
+					});
+					renderQuests();
+				});
+
 				questEl.appendChild(tasksContainer);
+
 				questList.appendChild(questEl);
 			});
 		}
+
+		const addQuestEl = document.createElement('button');
+		addQuestEl.className = 'button add-task';
+		addQuestEl.textContent = 'Добавить задачу';
+
+		questList.appendChild(addQuestEl);
+
+		addQuestEl.addEventListener('click', () => {
+			if (!(store.quests[tabType] instanceof Array)) {
+				store.quests[tabType] = [];
+			}
+
+			let newId = 1;
+			for (const key in store.quests) {
+				const quests = store.quests[key];
+				const maxId = Math.max.apply(null, (quests.map(quest => parseInt(quest.id)) || []));
+				if (maxId >= newId) newId = maxId + 1;
+			}
+
+			store.quests[tabType].push({
+				id: newId,
+				title: 'Название задачи',
+				description: 'Описание задачи',
+				tasks: [],
+			});
+			renderQuests();
+		});
 
 		// Добавляем обработчики для кнопок показа локации
 		document.querySelectorAll('.show-location').forEach((btn) => {
@@ -1003,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function checkLocation(location) {
 		if (!location || !location.type) return false;
-		
+
 		switch (location.type) {
 			case 'sector':
 				return !!(options.systems.find((s) => s.sector === location.sector));
@@ -1035,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		resetHighlights();
 		// Находим задачу
 		let task = null;
-		for (const category of ['active', 'completed']) {
+		for (const category of questStatuses) {
 			for (const quest of store.quests[category]) {
 				if (quest.id !== questId) continue;
 				const foundTask = quest.tasks.find((t) => t.id === taskId);
@@ -1250,28 +1300,28 @@ document.addEventListener('DOMContentLoaded', function () {
 				inputSector.className = 'input';
 				inputSector.type = 'text';
 				inputSector.name = 'value[sector]';
-				inputSector.value = currentValue.sector || '';
+				inputSector.value = currentValue && currentValue.sector || '';
 				form.appendChild(inputSector);
 
 				const inputSystem = document.createElement('input');
 				inputSystem.className = 'input';
 				inputSystem.type = 'text';
 				inputSystem.name = 'value[system]';
-				inputSystem.value = currentValue.system || '';
+				inputSystem.value = currentValue && currentValue.system || '';
 				form.appendChild(inputSystem);
 
 				const inputPlanet = document.createElement('input');
 				inputPlanet.className = 'input';
 				inputPlanet.type = 'text';
 				inputPlanet.name = 'value[planet]';
-				inputPlanet.value = currentValue.planet || '';
+				inputPlanet.value = currentValue && currentValue.planet || '';
 				form.appendChild(inputPlanet);
 
 				const inputMoon = document.createElement('input');
 				inputMoon.className = 'input';
 				inputMoon.type = 'text';
 				inputMoon.name = 'value[moon]';
-				inputMoon.value = currentValue.moon || '';
+				inputMoon.value = currentValue && currentValue.moon || '';
 				form.appendChild(inputMoon);
 				break;
 		
