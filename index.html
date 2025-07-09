@@ -25,7 +25,7 @@
 			<div class="coordinates" id="coordinates">0, 0</div>
 
 			<div class="menu">
-				<button class="menu-item" id="questToggle">Задания</button>
+				<button class="menu-item" id="questOpen">Задания</button>
 				<hr>
 				<button class="menu-item" id="importStore">Загрузить</button>
 				<button class="menu-item" id="exportStore">Сохранить</button>
@@ -41,7 +41,7 @@
 					<button class="quest-tab is-active" data-tab="active">Активные</button>
 					<button class="quest-tab" data-tab="completed">Завершенные</button>
 				</div>
-				<div class="quest-list" id="questList"></div>
+				<div id="questList" class="quest-list"></div>
 			</div>
 
 			<div id="systemInfo" class="system-info">
@@ -60,6 +60,14 @@
 					<button id="closeBodyInfo" class="close-btn"></button>
 				</div>
 				<div id="bodyDetails" class="body-details"></div>
+			</div>
+
+			<div id="editInfo" class="edit-info">
+				<div class="edit-info-header">
+					<span class="title">Редактирование</span>
+					<button id="closeEditInfo" class="close-btn"></button>
+				</div>
+				<div id="editBody" class="edit-body"></div>
 			</div>
 		</div>
 

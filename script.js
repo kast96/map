@@ -4,9 +4,11 @@ document.addEventListener('DOMContentLoaded', function () {
 	// Элементы DOM
 	const map = document.getElementById('map');
 	const systemInfo = document.getElementById('systemInfo');
+	const celestialBodies = document.getElementById('celestialBodies');
 	const bodyInfo = document.getElementById('bodyInfo');
 	const closeSystemInfo = document.getElementById('closeSystemInfo');
 	const closeBodyInfo = document.getElementById('closeBodyInfo');
+	const bodyDetails = document.getElementById('bodyDetails');
 	const closeQuestInfo = document.getElementById('closeQuestInfo');
 	const zoomInBtn = document.getElementById('zoomIn');
 	const zoomOutBtn = document.getElementById('zoomOut');
@@ -14,11 +16,14 @@ document.addEventListener('DOMContentLoaded', function () {
 	const zoomSliderHandle = document.getElementById('zoomSliderHandle');
 	const coordinates = document.getElementById('coordinates');
 	const questInfo = document.getElementById('questInfo');
-	const questToggle = document.getElementById('questToggle');
+	const questOpen = document.getElementById('questOpen');
 	const questList = document.getElementById('questList');
 	const exportStore = document.getElementById('exportStore');
 	const importStore = document.getElementById('importStore');
 	const storeFile = document.getElementById('storeFile');
+	const editInfo = document.getElementById('editInfo');
+	const closeEditInfo = document.getElementById('closeEditInfo');
+	const editBody = document.getElementById('editBody');
 
 	// Состояние карты
 	let scale = 1;
@@ -78,14 +83,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	zoomSlider.addEventListener('click', handleSliderClick);
 
-	closeSystemInfo.addEventListener('click', () =>
+	closeSystemInfo.addEventListener('click', () => {
 		systemInfo.classList.remove('is-open')
-	);
-	closeBodyInfo.addEventListener('click', () =>
-		bodyInfo.classList.remove('is-open')
-	);
+		celestialBodies.innerHTML = '';
+	});
+	closeBodyInfo.addEventListener('click', () => {
+		bodyInfo.classList.remove('is-open');
+		bodyDetails.innerHTML = '';
+	});
 	closeQuestInfo.addEventListener('click', () => {
 		questInfo.classList.remove('is-open');
+	});
+	closeEditInfo.addEventListener('click', () => {
+		editInfo.classList.remove('is-open');
+		editBody.innerHTML = '';
 	});
 	map.addEventListener('click', () => {
 		resetHighlights();
@@ -107,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	storeFile.addEventListener('change', (e) => {
 		const file = e.target.files[0];
+		if (!file) return;
 
 		const reader = new FileReader();
 
@@ -390,8 +402,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function showSystemInfo(system) {
 		document.getElementById('systemName').textContent = system.name;
-		const bodiesContainer = document.getElementById('celestialBodies');
-		bodiesContainer.innerHTML = '';
+		celestialBodies.innerHTML = '';
 
 		// Группируем тела по орбитам
 		const orbits = {};
@@ -493,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			});
 
 			orbitGroup.appendChild(orbitLevel);
-			bodiesContainer.appendChild(orbitGroup);
+			celestialBodies.appendChild(orbitGroup);
 		});
 
 		systemInfo.classList.add('is-open');
@@ -501,8 +512,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function showBodyInfo(body) {
 		document.getElementById('bodyName').textContent = body.name;
-		const detailsContainer = document.getElementById('bodyDetails');
-		detailsContainer.innerHTML = '';
+		bodyDetails.innerHTML = '';
 
 		const el = document.createElement('div');
 		el.className = `celestial-detail celestial-body celestial-body-${body.type} ${body.size}`;
@@ -511,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (body.image) {
 			el.style.backgroundImage = `url('${body.image}')`;
 		}
-		detailsContainer.appendChild(el);
+		bodyDetails.appendChild(el);
 
 		if (body.moons && body.moons.length > 0) {
 			const moonContainerEl = document.createElement('div');
@@ -548,7 +558,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				moonContainerEl.appendChild(moonElContainer);
 			});
 
-			detailsContainer.appendChild(moonContainerEl);
+			bodyDetails.appendChild(moonContainerEl);
 		}
 
 		const propsEl = document.createElement('div');
@@ -572,7 +582,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			}
 		}
 
-		detailsContainer.appendChild(propsEl);
+		bodyDetails.appendChild(propsEl);
 
 		bodyInfo.classList.add('is-open');
 	}
@@ -804,21 +814,73 @@ document.addEventListener('DOMContentLoaded', function () {
 		const activeTab = document.querySelector('.quest-tab.is-active');
 		const tabType = activeTab ? activeTab.dataset.tab : 'active';
 
+		const questionActiveValues = {
+			active: 'Квест активен',
+			completed: 'Квест завершен',
+		};
+		const taskActiveValues = {
+			active: 'Активна',
+			completed: 'Выполнена',
+			failed: 'Успешно провалена',
+		};
+
 		if (store && store.quests && store.quests[tabType]) {
-			store.quests[tabType].forEach((quest) => {
+			store.quests[tabType].forEach((quest, index) => {
 				const questEl = document.createElement('div');
 				questEl.className = 'quest-item';
 
-				questEl.innerHTML = `
-					<div class='quest-header'>
-						<div class='quest-title'>${quest.title}</div>
-						<div class='quest-description'>${quest.description}</div>
-					</div>
-				`;
+				const questHeaderEl = document.createElement('div');
+				questHeaderEl.className = 'quest-header';
+
+				const questTitleEl = document.createElement('div');
+				questTitleEl.className = 'quest-title';
+				questTitleEl.textContent = quest.title;
+				questHeaderEl.appendChild(questTitleEl);
+
+				questTitleEl.addEventListener('dblclick', () => {
+					showEditPopup(quest.title, (value) => {
+						quest.title = value;
+						renderQuests();
+					});
+				});
+
+				const questStatusEl = document.createElement('div');
+				questStatusEl.className = 'quest-status';
+				questStatusEl.textContent = questionActiveValues[tabType] || 'Статус не определен';
+				questHeaderEl.appendChild(questStatusEl);
+
+				questStatusEl.addEventListener('dblclick', () => {
+					showEditPopup(
+						tabType,
+						(value) => {
+							store.quests[tabType].splice(index, 1);
+							store.quests[value].push(quest);
+							renderQuests();
+						},
+						'select',
+						{
+							values: questionActiveValues
+						}
+					);
+				});
+
+				const questDescriptionEl = document.createElement('div');
+				questDescriptionEl.className = 'quest-description';
+				questDescriptionEl.innerHTML = quest.description;
+				questHeaderEl.appendChild(questDescriptionEl);
+
+				questDescriptionEl.addEventListener('dblclick', () => {
+					showEditPopup(quest.description, (value) => {
+						quest.description = value;
+						renderQuests();
+					}, 'textarea');
+				});
+
+				questEl.appendChild(questHeaderEl);
 
 				const tasksContainer = document.createElement('div');
 				tasksContainer.className = 'quest-body';
-				quest.tasks.forEach((task) => {
+				quest.tasks.forEach((task, indexTask) => {
 					const taskEl = document.createElement('div');
 					taskEl.className = `task-item ${task.status}`;
 
@@ -827,28 +889,89 @@ document.addEventListener('DOMContentLoaded', function () {
 						locationText = getLocationText(task.location);
 					}
 
-					taskEl.innerHTML = `
-						<div class='task-left'>
-							<div class='task-header'>
-								<div class='task-status'></div>
-								<div class='task-title'>${task.title}</div>
-							</div>
-							${locationText ? `
-								<div class='task-location'>
-									${locationText ? `<div class='task-location-text'>${locationText}</div>` : ''}
-								</div>
-							`	: ''}
-						</div>
-						${task.location ? `
-							<div class='task-right'>
-								${task.location ? `<button class='show-location' data-task-id='${task.id}'>
-									<svg class='show-location-icon' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-										<path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/>
-									</svg>
-								</button>` : ''}
-							</div>
-						`	: ''}
-					`;
+					const taskLeftEl = document.createElement('div');
+					taskLeftEl.className = 'task-left';
+
+					const taskHeaderEl = document.createElement('div');
+					taskHeaderEl.className = 'task-header';
+
+					const taskStatusEl = document.createElement('div');
+					taskStatusEl.className = 'task-status';
+					taskHeaderEl.appendChild(taskStatusEl);
+
+					taskStatusEl.addEventListener('dblclick', () => {
+						showEditPopup(
+							task.status,
+							(value) => {
+								task.status = value
+								renderQuests();
+							},
+							'select',
+							{
+								values: taskActiveValues
+							}
+						);
+					});
+
+					const taskTitleEl = document.createElement('div');
+					taskTitleEl.className = 'task-title';
+					taskTitleEl.textContent = task.title;
+					taskHeaderEl.appendChild(taskTitleEl);
+
+					taskTitleEl.addEventListener('dblclick', () => {
+						showEditPopup(task.title, (value) => {
+							task.title = value;
+							renderQuests();
+						});
+					});
+
+					taskLeftEl.appendChild(taskHeaderEl);
+
+					if (locationText) {
+						const taskLocationEl = document.createElement('div');
+						taskLocationEl.className = 'task-location';
+
+						const taskLocationTextEl = document.createElement('div');
+						taskLocationTextEl.className = 'task-location-text';
+						taskLocationTextEl.textContent = locationText;
+						taskLocationEl.appendChild(taskLocationTextEl);
+
+						taskLocationEl.addEventListener('dblclick', () => {
+							showEditPopup(
+								task.location,
+								(value) => {
+									task.location = null;
+									['sector', 'system', 'planet', 'moon'].forEach(type => {
+										if (!value[type]) return;
+										if (!task.location) task.location = {};
+										task.location.type = type;
+										task.location[type] = value[type];
+									});
+									renderQuests();
+								},
+								'location'
+							);
+						});
+
+						taskLeftEl.appendChild(taskLocationEl);
+					}
+
+					taskEl.appendChild(taskLeftEl);
+
+					const taskRightEl = document.createElement('div');
+					taskRightEl.className = 'task-right';
+
+					if (checkLocation(task.location)) {
+						taskRightEl.innerHTML = `
+							<button class='show-location' data-task-id='${task.id}' data-quest-id='${quest.id}'>
+								<svg class='show-location-icon' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+									<path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/>
+								</svg>
+							</button>
+						`;
+					}
+
+					taskEl.appendChild(taskRightEl);
 
 					tasksContainer.appendChild(taskEl);
 				});
@@ -862,45 +985,59 @@ document.addEventListener('DOMContentLoaded', function () {
 		document.querySelectorAll('.show-location').forEach((btn) => {
 			btn.addEventListener('click', () => {
 				const taskId = parseInt(btn.dataset.taskId);
-				highlightTaskLocation(taskId);
+				const questId = parseInt(btn.dataset.questId);
+				highlightTaskLocation(taskId, questId);
 			});
 		});
 	}
 
 	function getLocationText(location) {
+		let locationArray = [];
+		if (location.sector) locationArray.push(location.sector);
+		if (location.system) locationArray.push(location.system);
+		if (location.planet) locationArray.push(location.planet);
+		if (location.moon) locationArray.push(location.moon);
+		
+		return locationArray.join(' - ');
+	}
+
+	function checkLocation(location) {
+		if (!location || !location.type) return false;
+		
 		switch (location.type) {
 			case 'sector':
-				return location.sector || '';
+				return !!(options.systems.find((s) => s.sector === location.sector));
 			case 'system':
 				const system = getSystemByName(location.system);
-				return system ? `${system.sector} - ${system.name}` : '';
+				return system && system.sector === location.sector;
 			case 'planet':
 				if (planetSystem = getSystemByName(location.system)) {
-					const planet = getPlanetByName(location.planet, planetSystem);
-					if (planet) return `${planetSystem.sector} - ${planetSystem.name} - ${planet.name}`;
+					if (planetSystem.sector !== location.sector) return false;
+					return !!(getPlanetByName(location.planet, planetSystem));
 				}
-				return '';
+				return false;
 			case 'moon':
 				if (moonSystem = getSystemByName(location.system)) {
+					if (moonSystem.sector !== location.sector) return false;
 					const planet = getPlanetByName(location.planet, moonSystem);
 					if (planet && planet.moons) {
-						const moon = getMoonByName(location.moon, planet);
-						if (moon) return `${moonSystem.sector} - ${moonSystem.name} - ${planet.name} - ${moon.name}`;
+						return (!!getMoonByName(location.moon, planet));
 					}
 				}
-				return '';
+				return false;
 			default:
-				return '';
+				return false;
 		}
 	}
 
-	function highlightTaskLocation(taskId) {
+	function highlightTaskLocation(taskId, questId) {
 		// Сначала сбрасываем все подсветки
 		resetHighlights();
 		// Находим задачу
 		let task = null;
 		for (const category of ['active', 'completed']) {
 			for (const quest of store.quests[category]) {
+				if (quest.id !== questId) continue;
 				const foundTask = quest.tasks.find((t) => t.id === taskId);
 				if (foundTask) {
 					task = foundTask;
@@ -1061,8 +1198,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	// Обработчики для панели квестов
-	questToggle.addEventListener('click', () => {
-		questInfo.classList.toggle('is-open');
+	questOpen.addEventListener('click', () => {
+		questInfo.classList.add('is-open');
 	});
 
 	document.querySelectorAll('.quest-tab').forEach((tab) => {
@@ -1072,4 +1209,115 @@ document.addEventListener('DOMContentLoaded', function () {
 			renderQuests();
 		});
 	});
+
+	function showEditPopup(currentValue, callback, type = 'text', options = {}) {
+		editBody.innerHTML = '';
+
+		const form = document.createElement('form');
+		form.className = 'form';
+
+		switch (type) {
+			case 'textarea':
+				const textarea = document.createElement('textarea');
+				textarea.className = 'textarea';
+				textarea.name = 'value';
+				textarea.value = currentValue.replace(/<br\s*\/?>/gi, '\n');
+				form.appendChild(textarea);
+				break;
+
+			case 'select':
+				const select = document.createElement('select');
+				select.className = 'select';
+				select.name = 'value';
+
+				if (options.values) {
+					for (const value in options.values) {
+						const name = options.values[value];
+						const option = document.createElement('option');
+						option.value = value;
+						option.textContent = name;
+						select.appendChild(option);
+					}
+				}
+
+				select.value = currentValue;
+
+				form.appendChild(select);
+				break;
+
+			case 'location':
+				const inputSector = document.createElement('input');
+				inputSector.className = 'input';
+				inputSector.type = 'text';
+				inputSector.name = 'value[sector]';
+				inputSector.value = currentValue.sector || '';
+				form.appendChild(inputSector);
+
+				const inputSystem = document.createElement('input');
+				inputSystem.className = 'input';
+				inputSystem.type = 'text';
+				inputSystem.name = 'value[system]';
+				inputSystem.value = currentValue.system || '';
+				form.appendChild(inputSystem);
+
+				const inputPlanet = document.createElement('input');
+				inputPlanet.className = 'input';
+				inputPlanet.type = 'text';
+				inputPlanet.name = 'value[planet]';
+				inputPlanet.value = currentValue.planet || '';
+				form.appendChild(inputPlanet);
+
+				const inputMoon = document.createElement('input');
+				inputMoon.className = 'input';
+				inputMoon.type = 'text';
+				inputMoon.name = 'value[moon]';
+				inputMoon.value = currentValue.moon || '';
+				form.appendChild(inputMoon);
+				break;
+		
+			default:
+				const input = document.createElement('input');
+				input.className = 'input';
+				input.type = type;
+				input.name = 'value';
+				input.value = currentValue;
+				form.appendChild(input);
+				break;
+		}
+
+		const submit = document.createElement('input');
+		submit.className = 'button submit';
+		submit.type = 'submit';
+		submit.value = 'Сохранить';
+		form.appendChild(submit);
+
+		editBody.appendChild(form);
+
+		form.addEventListener('submit', (e) => {
+			e.preventDefault();
+
+			const formData = new FormData(form);
+			let value = formData.get('value');
+
+			if (type == 'location') {
+				value = [];
+				value.sector = formData.get('value[sector]');
+				value.system = formData.get('value[system]');
+				value.planet = formData.get('value[planet]');
+				value.moon = formData.get('value[moon]');
+			}
+
+			if (typeof(callback) === 'function')
+			{
+				if (typeof(value) === 'string') {
+					value.replace(/\n/g, '<br>');
+				}
+				callback(value);
+			}
+
+			editInfo.classList.remove('is-open');
+		});
+
+		editInfo.classList.add('is-open');
+	}
 });

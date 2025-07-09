@@ -140,7 +140,8 @@ body {
 
 .system-info,
 .body-info,
-.quest-info {
+.quest-info,
+.edit-info {
 	position: absolute;
 	top: 0;
 	bottom: 0;
@@ -157,7 +158,8 @@ body {
 
 .system-info.is-open,
 .body-info.is-open,
-.quest-info.is-open {
+.quest-info.is-open,
+.edit-info.is-open {
 	right: 0;
 }
 
@@ -168,7 +170,8 @@ body {
 
 .system-info-header,
 .body-info-header,
-.quest-info-header {
+.quest-info-header,
+.edit-info-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -624,6 +627,10 @@ body {
 	font-weight: 600;
 }
 
+.quest-status {
+	font-size: 14px;
+}
+
 .quest-description {
 	font-size: 14px;
 	color: var(--text-color);
@@ -780,4 +787,39 @@ body {
 	height: 0;
 	opacity: 0;
 	overflow: hidden;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+}
+
+.input,
+.textarea,
+.select {
+	width: 100%;
+	padding: 15px;
+	border: 1px solid var(--text-color);
+	box-sizing: border-box;
+	font-family: 'Tektur';
+}
+
+.button {
+	background-color: var(--main-color);
+	color: #fff;
+	border: 0;
+	padding: 15px 30px;
+	text-align: center;
+	font-family: 'Tektur';
+	cursor: pointer;
+}
+
+.button:hover {
+	background-color: #333;
+}
+
+.submit {
+	min-width: 200px;
 }
