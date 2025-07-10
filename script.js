@@ -1336,6 +1336,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				inputSector.className = 'input';
 				inputSector.type = 'text';
 				inputSector.name = 'value[sector]';
+				inputSector.placeholder = 'Сектор';
 				inputSector.value = currentValue && currentValue.sector || '';
 				form.appendChild(inputSector);
 
@@ -1343,6 +1344,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				inputSystem.className = 'input';
 				inputSystem.type = 'text';
 				inputSystem.name = 'value[system]';
+				inputSystem.placeholder = 'Система';
 				inputSystem.value = currentValue && currentValue.system || '';
 				form.appendChild(inputSystem);
 
@@ -1350,6 +1352,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				inputPlanet.className = 'input';
 				inputPlanet.type = 'text';
 				inputPlanet.name = 'value[planet]';
+				inputPlanet.placeholder = 'Планета/космический объект';
 				inputPlanet.value = currentValue && currentValue.planet || '';
 				form.appendChild(inputPlanet);
 
@@ -1357,6 +1360,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				inputMoon.className = 'input';
 				inputMoon.type = 'text';
 				inputMoon.name = 'value[moon]';
+				inputMoon.placeholder = 'Луна';
 				inputMoon.value = currentValue && currentValue.moon || '';
 				form.appendChild(inputMoon);
 				break;
